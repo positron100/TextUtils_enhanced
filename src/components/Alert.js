@@ -3,7 +3,7 @@ import React from 'react'
 export default function Alert(props) {
     return (
         <>
-        <div className="container">
+        <div className="container" style={{height:'50px'}}>
 
         <div className={`alert alert-${props.alert.T} alert-dismissible fade show`} role="alert">
                 {props.alert.M}

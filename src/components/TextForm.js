@@ -26,6 +26,11 @@ export default function TextForm(props) {
     let newtext = document.getElementById("exampleFormControlTextarea1");
     newtext.select();
     navigator.clipboard.writeText(newtext.value);
+    // would not highlight the copied text
+    document.getSelection().removeAllRanges();
+    // to show the alert for copy button
+    // props.showAlert("text has been copied","success");
+
   }
   // **** function to remove all the extra spaces ****
   const removeExtraSpace=()=>{
@@ -50,7 +55,8 @@ export default function TextForm(props) {
   // setText("newtext"); (correct way to change the text variable)
 
   // statement to count no. of words
-  let words = text.split(/[ ]+/).length - 1;
+  let words = text.split(/\s+/).length - 1;
+  // let words = text.split(/\s+/).filter((element)=>{return element!==0}).length - 1;
   return (
     <>
       <div className="container" style={{color: props.mode==="dark"?"white":"black"}}>
@@ -65,7 +71,7 @@ export default function TextForm(props) {
             className="form-control"
             id="exampleFormControlTextarea1"
             rows="8"
-            style={{backgroundColor: props.mode==="dark"?"grey":"white", color: props.mode==="dark"?"white":"black",fontSize: "20px", fontFamily: "Poppins,sans-serif" }}
+            style={{backgroundColor: props.mode==="dark"?"#042743":"white", color: props.mode==="dark"?"white":"black",fontSize: "20px", fontFamily: "Poppins,sans-serif" }}
           ></textarea>
           
 
@@ -83,7 +89,8 @@ export default function TextForm(props) {
       <div className="container" style={{color: props.mode==="dark"?"white":"black"}}>
         <p>Your Text Summary : </p>
         {/* let words = text.split(/[ ]+/).length - 1; */}
-        <p>{words} words and {text.length} characters</p>
+        <p>{words} words and {text.length} characters
+        </p>
       </div>
     </>
   );

@@ -73,7 +73,7 @@ function App() {
       
       {/* Text Box component */}
 
-      <Route exact path="/" element={<TextForm heading="Enter the text to analyze : " mode={Mode}/>}>
+      <Route exact path="/" element={<TextForm heading="Enter the text to analyze : " mode={Mode} showAlert={showAlert}/>}>
       </Route>
     </Routes>
     </Router>    
