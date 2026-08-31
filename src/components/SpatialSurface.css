@@ -1,0 +1,32 @@
+.spatial {
+  position: relative;
+  width: 100%;
+  overflow-x: clip;
+  touch-action: pan-y;
+}
+
+.spatial__track {
+  position: relative;
+  width: 100%;
+}
+
+.spatial__card {
+  width: 100%;
+}
+
+/* popLayout absolutely-positions the exiting card — pin it top-left so it
+   slides away from where it sat rather than jumping. */
+.spatial__card[style*="position: absolute"] {
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+/* the adjacent view, shown sliding in from the edge during an active drag */
+.spatial__peek {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  pointer-events: none;
+  opacity: 0.9;
+}

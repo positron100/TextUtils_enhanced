@@ -1,0 +1,59 @@
+.hltext {
+  position: relative;
+}
+
+/* The backdrop and the textarea must share EVERY box metric so glyphs align. */
+.hltext__backdrop,
+.hltext__area {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  letter-spacing: normal;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.hltext__backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  color: var(--text);
+  background: var(--bg);
+  pointer-events: none;
+}
+
+.hltext__backdrop mark {
+  background: var(--accent-weak);
+  color: inherit;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px var(--accent-ring);
+}
+
+.hltext__area {
+  position: relative;
+  display: block;
+  width: 100%;
+  resize: vertical;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--accent);
+}
+
+.hltext__area::placeholder {
+  color: var(--text-faint);
+}
+
+.hltext__area::selection {
+  background: var(--selection);
+}
+
+.hltext__area:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-weak);
+}

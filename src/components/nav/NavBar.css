@@ -1,0 +1,237 @@
+.nav {
+  position: fixed;
+  inset: var(--space-4) 0 auto;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  pointer-events: none;
+}
+
+.nav__bar {
+  position: relative;
+  pointer-events: auto;
+  width: 100%;
+  max-width: 68rem;
+  min-height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  transition: background-color var(--dur-surface) var(--ease-standard),
+    border-color var(--dur-surface) var(--ease-standard),
+    box-shadow var(--dur-surface) var(--ease-standard),
+    backdrop-filter var(--dur-surface) var(--ease-standard);
+}
+
+.nav__bar[data-scrolled],
+.nav__bar[data-open] {
+  border-color: color-mix(in srgb, var(--border-strong) 58%, transparent);
+  background: color-mix(in srgb, var(--bg-elevated) 76%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(1.7);
+  backdrop-filter: blur(24px) saturate(1.7);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--text) 5%, transparent) inset,
+    0 18px 48px -22px rgba(20, 16, 12, 0.28);
+}
+
+.nav__edge {
+  position: absolute;
+  inset: 0 16% auto;
+  height: 1px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text) 12%, transparent),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity var(--dur-surface) var(--ease-standard);
+}
+.nav__bar[data-scrolled] .nav__edge,
+.nav__bar[data-open] .nav__edge {
+  opacity: 1;
+}
+
+.nav__brand {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+}
+
+.nav__items {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 auto;
+}
+
+/* the one liquid marker gliding behind the active view */
+.nav__indicator {
+  z-index: 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent-weak);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent),
+    0 6px 16px -10px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.nav__items .glasspill {
+  z-index: 1;
+}
+/* the indicator already carries the active surface — keep the pill flat */
+.nav__items .glasspill.is-active {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.nav__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.nav__search {
+  gap: var(--space-2);
+  height: var(--control-h-sm);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border-color: var(--border-strong) !important;
+  font-size: 0.82rem;
+}
+.nav__search .glasspill__label {
+  gap: var(--space-2);
+}
+.nav__searchtext {
+  line-height: 1;
+}
+.nav__search kbd {
+  display: inline-flex;
+  align-items: center;
+  height: 1.4rem;
+  padding: 0 0.45rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1;
+  color: var(--text-faint);
+}
+
+.nav__burger {
+  display: none;
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.nav__glyph {
+  position: relative;
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+.nav__glyph span {
+  position: absolute;
+  left: 0;
+  height: 2px;
+  width: 16px;
+  border-radius: 2px;
+  background: currentColor;
+}
+.nav__glyph span:nth-child(1) { top: 3px; }
+.nav__glyph span:nth-child(2) { top: 7px; }
+.nav__glyph span:nth-child(3) { top: 11px; }
+
+/* --- mobile menu --- */
+.nav__menu {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: var(--space-4);
+  left: var(--space-4);
+  z-index: 61;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 65%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-elevated) 90%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(1.7);
+  backdrop-filter: blur(24px) saturate(1.7);
+  box-shadow: 0 24px 56px -20px rgba(20, 16, 12, 0.42);
+}
+
+.nav__menuitem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 550;
+  text-align: left;
+  cursor: pointer;
+}
+.nav__menuitem[data-active] {
+  color: var(--accent);
+  background: var(--accent-weak);
+}
+@media (hover: hover) {
+  .nav__menuitem:hover {
+    background: var(--accent-weak);
+  }
+}
+
+.nav__menutheme {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  margin-top: var(--space-1);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 54rem) {
+  .nav__items,
+  .nav__searchtext,
+  .nav__search kbd {
+    display: none;
+  }
+  .nav__burger {
+    display: inline-flex;
+  }
+  .nav__search {
+    width: var(--control-h-sm);
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav__bar,
+  .nav__search {
+    transition: none;
+  }
+}

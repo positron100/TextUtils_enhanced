@@ -1,0 +1,116 @@
+.find-replace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-sm);
+  transform-origin: top;
+  animation: fr-open var(--dur-base) var(--ease-standard);
+}
+
+@keyframes fr-open {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scaleY(0.96);
+  }
+}
+
+.find-replace__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.find-replace__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--control-h-sm);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.find-replace__input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-weak);
+}
+
+.find-replace__count {
+  flex: 0 0 auto;
+  min-width: 4.5rem;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.find-replace__toggles {
+  display: flex;
+  gap: 2px;
+}
+
+.find-replace__toggle,
+.find-replace__nav,
+.find-replace__close,
+.find-replace__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--control-h-sm);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard),
+    color var(--dur-fast) var(--ease-standard);
+}
+
+.find-replace__toggle {
+  width: 2.1rem;
+}
+.find-replace__nav,
+.find-replace__close {
+  width: 2rem;
+}
+.find-replace__action {
+  padding: 0 var(--space-3);
+  color: var(--text);
+}
+
+@media (hover: hover) {
+  .find-replace__toggle:hover,
+  .find-replace__nav:hover:not(:disabled),
+  .find-replace__close:hover,
+  .find-replace__action:hover:not(:disabled) {
+    background: var(--bg-subtle);
+    border-color: var(--text-faint);
+  }
+}
+
+.find-replace__toggle[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.find-replace__nav:disabled,
+.find-replace__action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.find-replace__close {
+  font-size: 1.1rem;
+}

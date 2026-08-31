@@ -1,0 +1,126 @@
+.editor {
+  position: relative;
+}
+
+.editor__area {
+  display: block;
+  width: 100%;
+  min-height: 17rem;
+  resize: vertical;
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  color: var(--text);
+  caret-color: var(--accent);
+  font-family: var(--font-editor);
+  font-size: var(--editor-size);
+  line-height: var(--editor-leading);
+  box-shadow: var(--shadow-editor);
+  transition: border-color var(--dur-base) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-standard),
+    opacity var(--dur-fast) var(--ease-standard),
+    filter var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-slow) var(--ease-standard);
+}
+
+.editor__area::placeholder {
+  color: var(--text-faint);
+}
+
+/* one-shot ghost example — types in while the editor is untouched & empty */
+.editor__ghost {
+  position: absolute;
+  top: var(--space-5);
+  left: var(--space-5);
+  right: var(--space-5);
+  pointer-events: none;
+  color: var(--text-faint);
+  font-family: var(--font-editor);
+  font-size: var(--editor-size);
+  line-height: var(--editor-leading);
+  white-space: pre-wrap;
+}
+.editor__ghostcaret {
+  display: inline-block;
+  width: 1px;
+  height: 1em;
+  margin-left: 1px;
+  translate: 0 2px;
+  background: var(--text-faint);
+  animation: editor-ghostblink 1s steps(1) infinite;
+}
+@keyframes editor-ghostblink {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .editor__ghost {
+    display: none;
+  }
+}
+
+@media (hover: hover) {
+  .editor__area:hover {
+    border-color: var(--border-strong);
+  }
+}
+
+/* Mouse focus: a quiet lift only — border unchanged, no outlined box. */
+.editor__area:focus {
+  outline: none;
+  box-shadow: var(--shadow-editor-focus);
+}
+/* Keyboard focus adds a soft ring so it stays clearly distinguishable. */
+.editor__area:focus-visible {
+  box-shadow: var(--shadow-editor-focus), 0 0 0 2px var(--accent-weak);
+}
+
+/* Clear: brief fade of the outgoing text; textarea stays interactive. */
+.editor[data-clearing="true"] .editor__area {
+  opacity: 0.3;
+  filter: blur(1px);
+}
+
+/* Completion pulse: an accent ring that expands and fades once. */
+.editor__pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+  pointer-events: none;
+  box-shadow: 0 0 0 2px var(--accent);
+  opacity: 0;
+  animation: editor-pulse var(--dur-slow) var(--ease-standard) forwards;
+}
+
+@keyframes editor-pulse {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.995);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.008);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor__area {
+    filter: none !important;
+  }
+  .editor[data-clearing="true"] .editor__area {
+    opacity: 1;
+  }
+  .editor__pulse {
+    display: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .editor__area {
+    padding: var(--space-4);
+    font-size: 1.05rem;
+    min-height: 12rem;
+  }
+}

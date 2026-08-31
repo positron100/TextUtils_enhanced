@@ -1,0 +1,224 @@
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition: background-color var(--dur-slow) var(--ease-standard),
+    color var(--dur-slow) var(--ease-standard);
+}
+
+::selection {
+  background: var(--selection);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* Screen-reader-only utility. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Page composition ----------------------------------------------------------
+   One primary stage holding interchangeable views. Each view composes itself
+   into the available width — Write is a two-region workspace, Developer is a
+   wide input/output bench, Contact is a centred column. The shell (nav, footer)
+   uses the full viewport. */
+
+.page {
+  min-height: 100dvh;
+  padding: calc(var(--nav-height) + var(--space-6)) clamp(var(--space-4), 4vw, var(--space-7))
+    var(--space-7);
+  display: flex;
+  flex-direction: column;
+  overflow-x: clip;
+}
+
+.surface-wrap {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 96rem;
+  flex: 1;
+}
+
+.hero__kicker {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* Write — editor + action rail, one balanced composition --------------- */
+.writeview {
+  max-width: 88rem;
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+.writeview__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+.writeview__editorwrap {
+  position: relative;
+}
+.writeview__rail {
+  position: sticky;
+  top: calc(var(--nav-height) + var(--space-5));
+}
+
+@media (max-width: 66rem) {
+  .writeview {
+    max-width: 46rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+  .writeview__rail {
+    position: static;
+  }
+}
+
+.app__footer {
+  margin-top: auto;
+  padding: var(--space-7) 0 var(--space-2);
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
+/* Entrance: a quiet staggered rise. Disabled under reduced-motion below. */
+@media (prefers-reduced-motion: no-preference) {
+  .enter {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: enter-rise var(--dur-slow) var(--ease-standard) forwards;
+    animation-delay: var(--enter-delay, 0ms);
+  }
+}
+
+@keyframes enter-rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Geometric reveal — the shared opening geometry. IntroReveal grows a window
+   with this on first paint; the theme toggle (themeTransition.js) mounts the
+   same window over the page to uncover the new theme from the centre out.
+   ONE keyframe set drives both, so they are the same animation. */
+@keyframes intro-geo {
+  0% {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border-width: 1.5px;
+  }
+  20% {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+  32% {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+  64% {
+    width: 100vw;
+    height: 48px;
+    border-radius: 8px;
+    border-width: 1.5px;
+  }
+  100% {
+    width: 100vw;
+    height: 100dvh;
+    border-radius: 0;
+    border-width: 0;
+  }
+}
+
+/* The theme reveal overlay: the new theme is applied to the page underneath
+   immediately; this masks the rest of the viewport in the OUTGOING page colour
+   and the window (same geometry as IntroReveal) grows to uncover it. */
+.theme-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: hidden;
+  pointer-events: none;
+}
+.theme-reveal__window {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  background: transparent;
+  box-shadow: 0 0 0 100vmax var(--reveal-shade, var(--bg));
+  will-change: width, height;
+  /* keep 1s / cubic-bezier in sync with viewTransition in lib/motion.js and
+     with IntroReveal (DURATION_MS). */
+  animation: intro-geo 1s cubic-bezier(0.62, 0, 0.15, 1) forwards;
+}
+
+/* Suppress the global colour transition while the reveal plays, so the growing
+   shape is the only motion. */
+html[data-theme-transition] * {
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

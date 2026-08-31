@@ -1,0 +1,74 @@
+/* A quiet status strip, not a grid of cards — hierarchy from type, not borders. */
+.statbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-1);
+  border-top: 1px solid var(--border);
+}
+
+.statbar__primary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat__rule {
+  display: none;
+}
+
+.stat__label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.stat .rolling-number {
+  font-size: 1.4rem;
+  font-weight: 640;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.statbar__secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+
+.statbar__quiet {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: 0.8rem;
+}
+.statbar__quietlabel {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.64rem;
+  color: var(--text-faint);
+}
+.statbar__quietval {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 30rem) {
+  .statbar__primary {
+    gap: var(--space-3) var(--space-5);
+  }
+  .stat .rolling-number {
+    font-size: 1.2rem;
+  }
+}

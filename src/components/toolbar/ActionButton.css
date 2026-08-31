@@ -1,0 +1,69 @@
+.action-btn {
+  --btn-bg: var(--bg-elevated);
+  --btn-border: var(--border-strong);
+  --btn-fg: var(--text);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--btn-border);
+  border-radius: var(--radius-sm);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-size: 0.9rem;
+  font-weight: 550;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  transition: background-color var(--dur-base) var(--ease-standard),
+    border-color var(--dur-base) var(--ease-standard),
+    color var(--dur-base) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-standard),
+    transform var(--dur-fast) var(--ease-press);
+}
+
+/* Hover only where a real pointer can hover — no sticky states on touch. */
+@media (hover: hover) {
+  .action-btn:hover {
+    --btn-bg: var(--bg-subtle);
+    --btn-border: var(--text-faint);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+  .action-btn--solid:hover {
+    --btn-bg: var(--accent-hover);
+    --btn-border: var(--accent-hover);
+  }
+}
+
+.action-btn:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: var(--dur-fast);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.action-btn--solid {
+  --btn-bg: var(--accent);
+  --btn-border: var(--accent);
+  --btn-fg: var(--accent-contrast);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-btn {
+    transition: background-color var(--dur-base) linear,
+      border-color var(--dur-base) linear, color var(--dur-base) linear;
+  }
+  .action-btn:hover,
+  .action-btn:active {
+    transform: none;
+  }
+}

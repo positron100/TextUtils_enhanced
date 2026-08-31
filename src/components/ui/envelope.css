@@ -1,0 +1,80 @@
+/* Shared envelope-fold visuals — the Contact letter and the JSON "Validated"
+   seal both draw the same sides / flap / wax seal, so the geometry lives here. */
+
+.envelope {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.envelope__inner {
+  position: absolute;
+  inset: 0;
+}
+.envelope__side {
+  position: absolute;
+  inset-block: 0;
+  width: 50%;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+.envelope__side--0 {
+  left: 0;
+  transform-origin: left center;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.envelope__side--1 {
+  left: 50%;
+  transform-origin: right center;
+  clip-path: polygon(100% 0, 0 50%, 100% 100%);
+}
+.envelope__flap {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 58%;
+  background: var(--bg-subtle);
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.envelope__seal {
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  translate: -50% -50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.flighttrail {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.flighttrail span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .envelope,
+  .flighttrail {
+    display: none;
+  }
+}

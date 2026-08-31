@@ -1,0 +1,53 @@
+.copy-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+}
+
+.copy-btn__face {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+  transition: opacity var(--dur-base) var(--ease-standard),
+    transform var(--dur-base) var(--ease-standard);
+}
+
+/* Inactive faces sit just below, faded out. */
+.copy-btn__face--copied,
+.copy-btn__face--error {
+  opacity: 0;
+  transform: translateY(5px) scale(0.94);
+}
+
+.copy-btn[data-status="idle"] .copy-btn__face--idle {
+  opacity: 1;
+  transform: none;
+}
+.copy-btn[data-status="idle"] .copy-btn__face--copied,
+.copy-btn[data-status="idle"] .copy-btn__face--error {
+  opacity: 0;
+}
+
+.copy-btn[data-status="copied"] .copy-btn__face--idle,
+.copy-btn[data-status="error"] .copy-btn__face--idle {
+  opacity: 0;
+  transform: translateY(-5px) scale(0.94);
+}
+
+.copy-btn[data-status="copied"] .copy-btn__face--copied {
+  opacity: 1;
+  transform: none;
+}
+.copy-btn[data-status="error"] .copy-btn__face--error {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy-btn__face {
+    transition: opacity var(--dur-base) linear;
+    transform: none !important;
+  }
+}

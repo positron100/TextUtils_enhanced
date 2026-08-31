@@ -1,0 +1,119 @@
+.typingview {
+  max-width: 74rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.typingview__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+.typingview__title {
+  margin: var(--space-2) 0 0;
+  font-size: clamp(1.5rem, 2.8vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+.typingview__modes {
+  display: flex;
+  gap: var(--space-1);
+}
+
+/* --- metrics: value dominant, label quiet, clearly separated --- */
+.typingview__metrics {
+  display: flex;
+  gap: var(--space-7);
+  flex-wrap: wrap;
+}
+/* stacked vertically in the side column of the horizontal layout */
+.typingview__metrics--stack {
+  flex-direction: column;
+  gap: var(--space-5);
+}
+@media (max-width: 58rem) {
+  .typingview__metrics--stack {
+    flex-direction: row;
+    gap: var(--space-5) var(--space-6);
+  }
+}
+.typingmetric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.typingmetric__value {
+  font-size: 2rem;
+  font-weight: 650;
+  line-height: 1;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.typingmetric__label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+/* --- free writing --- */
+.freetyping {
+  display: grid;
+  gap: var(--space-6);
+}
+@media (min-width: 58rem) {
+  .freetyping {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-7);
+  }
+}
+.freetyping__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.freetyping__note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.freetyping__field {
+  width: 100%;
+  min-height: 20rem;
+  resize: vertical;
+  padding: var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  color: var(--text);
+  caret-color: var(--accent);
+  font-family: var(--font-editor);
+  font-size: var(--editor-size);
+  line-height: var(--editor-leading);
+  box-shadow: var(--shadow-editor);
+}
+.freetyping__field:focus {
+  outline: none;
+  box-shadow: var(--shadow-editor-focus);
+}
+.freetyping__field:focus-visible {
+  box-shadow: var(--shadow-editor-focus), 0 0 0 2px var(--accent-weak);
+}
+
+@media (max-width: 46rem) {
+  .typingview__metrics {
+    gap: var(--space-5) var(--space-6);
+  }
+  .typingmetric__value {
+    font-size: 1.6rem;
+  }
+}

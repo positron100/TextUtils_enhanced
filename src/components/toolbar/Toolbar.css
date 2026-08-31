@@ -1,0 +1,26 @@
+.toolbar {
+  display: flex;
+}
+
+.toolbar__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.action-btn--icon {
+  padding: 0;
+  width: 2.75rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 34rem) {
+  .toolbar,
+  .toolbar__row {
+    width: 100%;
+  }
+  .toolbar__row .action-btn:not(.action-btn--icon) {
+    flex: 1 1 8rem;
+  }
+}

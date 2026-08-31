@@ -1,0 +1,47 @@
+.rolling-number {
+  display: inline-flex;
+  align-items: baseline;
+  min-width: 2ch;
+  font-size: 1.4rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+.rolling-number__col {
+  display: inline-block;
+  height: 1.1em;
+  overflow: hidden;
+}
+
+.rolling-number__strip {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rolling-number__digit {
+  height: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rolling-number__sep {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rolling-number__strip {
+    transition: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .rolling-number {
+    font-size: 1.2rem;
+  }
+}

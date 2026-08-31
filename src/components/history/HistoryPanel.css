@@ -1,0 +1,15 @@
+.history-panel .popover__item {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.history-panel__label {
+  font-weight: 550;
+}
+
+.history-panel .popover__itemmeta {
+  max-width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}

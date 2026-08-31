@@ -1,0 +1,81 @@
+.typingpulse {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+}
+
+.typingpulse__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.typingpulse__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  transition: background-color var(--dur-base) var(--ease-standard);
+}
+.typingpulse__dot[data-on] {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-weak);
+}
+
+.typingpulse__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.typingpulse__test {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 550;
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .typingpulse__test:hover {
+    text-decoration: underline;
+  }
+}
+
+.typingpulse__figs {
+  display: flex;
+  gap: var(--space-5);
+}
+.typingpulse__fig {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+.typingpulse__val {
+  font-size: 1.15rem;
+  font-weight: 650;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.typingpulse__unit {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.typingpulse__hint {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}

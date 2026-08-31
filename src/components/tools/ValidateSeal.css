@@ -1,0 +1,84 @@
+@import "../ui/envelope.css";
+
+/* .validseal reuses .dev-surface + .validseal__body (which shares
+   .dev-surface__area geometry) so it lines up with the input pane. */
+
+.validseal__stage,
+.validseal__done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  color: var(--accent);
+}
+.validseal__stage {
+  position: absolute;
+  inset: 0;
+}
+
+.validseal__card {
+  position: relative;
+  width: 12rem;
+  height: 7.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-raise);
+  transform-origin: 50% 58%;
+}
+.validseal__card .envelope__inner {
+  border-radius: inherit;
+  overflow: hidden;
+}
+.validseal__seal {
+  width: 2rem;
+  height: 2rem;
+}
+
+.validseal__check {
+  color: var(--accent);
+}
+.validseal__title {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-editor);
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.validseal__text {
+  margin: 0;
+  max-width: 22rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* failure tone — same animation, red mark / seal / heading */
+.validseal--error .validseal__stage,
+.validseal--error .validseal__done,
+.validseal--error .validseal__check {
+  color: #b4432f;
+}
+.validseal--error .validseal__title {
+  color: #b4432f;
+}
+:root[data-theme="dark"] .validseal--error .validseal__stage,
+:root[data-theme="dark"] .validseal--error .validseal__done,
+:root[data-theme="dark"] .validseal--error .validseal__check,
+:root[data-theme="dark"] .validseal--error .validseal__title {
+  color: #f0a58f;
+}
+.validseal--error .validseal__seal {
+  background: #b4432f;
+  color: #fff;
+}
+:root[data-theme="dark"] .validseal--error .validseal__seal {
+  background: #f0a58f;
+  color: #2a140f;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .validseal__stage .flighttrail {
+    display: none;
+  }
+}

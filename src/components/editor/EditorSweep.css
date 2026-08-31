@@ -1,0 +1,23 @@
+.editor__sweep {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.editor__area--ghost {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: var(--shadow-editor);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor__sweep {
+    display: none;
+  }
+}
