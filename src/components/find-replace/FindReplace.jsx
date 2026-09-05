@@ -7,7 +7,7 @@ import "./FindReplace.css";
  * navigation selects the match in the real textarea (browser highlight);
  * replace / replace-all go through the editor's history via `onCommit`.
  */
-export default function FindReplace({ open, text, textareaRef, onCommit, onClose }) {
+export default function FindReplace({ open, text, textareaRef, onCommit, onClose, onHighlight }) {
   const [query, setQuery] = useState("");
   const [replacement, setReplacement] = useState("");
   const [caseSensitive, setCaseSensitive] = useState(false);
@@ -31,6 +31,15 @@ export default function FindReplace({ open, text, textareaRef, onCommit, onClose
   useEffect(() => {
     setActive((i) => (matches.length ? Math.min(i, matches.length - 1) : 0));
   }, [matches.length]);
+
+  // The editor draws the highlight layer — it owns the textarea's box, and the
+  // mirror only lines up if it lives there. This panel stays the one place that
+  // knows what a match is.
+  useEffect(() => {
+    if (!onHighlight) return undefined;
+    onHighlight(open && matches.length ? { ranges: matches, active } : null);
+    return () => onHighlight(null);
+  }, [onHighlight, open, matches, active]);
 
   if (!open) return null;
 

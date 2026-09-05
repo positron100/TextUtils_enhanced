@@ -3,7 +3,10 @@
   margin-inline: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  /* One step, not two: the heading, the metrics and the writing surfaces are
+     one workspace. The wider gap here left a visible gulf between the title and
+     the numbers on tall viewports. */
+  gap: var(--space-5);
 }
 
 .typingview__head {
@@ -25,11 +28,23 @@
   gap: var(--space-1);
 }
 
-/* --- metrics: value dominant, label quiet, clearly separated --- */
+/* --- metrics: value dominant, label quiet, clearly separated ---
+   Read as one line of readings — WPM · ACCURACY · TIME — set well apart from
+   each other, with each value sitting directly over its own label. The wide
+   horizontal step is what makes them scan as separate figures rather than as a
+   run-on row. */
 .typingview__metrics {
   display: flex;
-  gap: var(--space-7);
+  align-items: flex-start;
+  gap: clamp(var(--space-6), 6vw, var(--space-7));
   flex-wrap: wrap;
+}
+/* Even columns, not just an even gap: "0", "100%" and "0:00" are different
+   widths, so packing them with a flex gap alone leaves the three readings
+   unevenly spaced and their labels off a common grid. A shared minimum width
+   puts every value — and the label under it — on the same rhythm. */
+.typingview__metrics > .typingmetric {
+  min-width: 6rem;
 }
 /* stacked vertically in the side column of the horizontal layout */
 .typingview__metrics--stack {
@@ -88,7 +103,9 @@
 }
 .freetyping__field {
   width: 100%;
-  min-height: 20rem;
+  /* Grows into whatever the viewport has left instead of stopping at a fixed
+     height and leaving the page bottom empty — same rule as the test panes. */
+  min-height: clamp(16rem, calc(100dvh - 23rem), 32rem);
   resize: vertical;
   padding: var(--space-6);
   border: 1px solid var(--border);
@@ -112,6 +129,11 @@
 @media (max-width: 46rem) {
   .typingview__metrics {
     gap: var(--space-5) var(--space-6);
+  }
+  /* Narrow enough that all three readings still hold one line on a phone
+     rather than wrapping TIME onto a row of its own. */
+  .typingview__metrics > .typingmetric {
+    min-width: 4.5rem;
   }
   .typingmetric__value {
     font-size: 1.6rem;

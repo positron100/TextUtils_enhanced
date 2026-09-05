@@ -57,6 +57,35 @@ export function parseRawKey(text, allowedBytes = [16, 24, 32]) {
   return bytes;
 }
 
+/**
+ * Removes one pair of matching outer quotes, for ciphertext copied out of JSON,
+ * a log line, a spreadsheet cell or a chat window — the last of which will have
+ * turned the straight pair into curly ones on the way. Exactly one pair, only
+ * when the string both opens and closes with the partner of the same pair;
+ * quotes anywhere else are content and are left alone. Base64url and the
+ * `TUC1.` envelope never contain a quote of any kind, so this cannot silently
+ * alter a real payload — no ciphertext character is ever rewritten.
+ *
+ * Decrypt-side only: quotes in plaintext are meaningful.
+ */
+const QUOTE_PAIRS = [
+  ['"', '"'],
+  ["'", "'"],
+  ["“", "”"], // “ ”
+  ["‘", "’"], // ‘ ’
+  ["«", "»"], // « »
+];
+
+export function unquote(text) {
+  const t = String(text ?? "").trim();
+  for (const [open, close] of QUOTE_PAIRS) {
+    if (t.length >= 2 && t.startsWith(open) && t.endsWith(close)) {
+      return t.slice(1, -1).trim();
+    }
+  }
+  return t;
+}
+
 export const PAYLOAD_PREFIX = "TUC1.";
 
 export function packPayload(meta) {
@@ -66,7 +95,7 @@ export function packPayload(meta) {
 export function parsePayload(payload) {
   const t = String(payload || "").trim();
   if (!t.startsWith(PAYLOAD_PREFIX)) {
-    throw new Error("Not a TextUtils payload (missing TUC1. prefix).");
+    throw new Error("Expected a TextUtils (TUC1) payload.");
   }
   let meta;
   try {

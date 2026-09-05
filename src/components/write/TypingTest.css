@@ -1,6 +1,8 @@
+/* The readings sit close above the surfaces they describe, so the metrics and
+   the writing area read as one workspace rather than two stacked blocks. */
 .typingtest {
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-4);
   grid-template-areas:
     "bar"
     "passage"
@@ -11,7 +13,7 @@
   .typingtest {
     grid-template-columns: 1fr 1fr;
     column-gap: var(--space-6);
-    row-gap: var(--space-5);
+    row-gap: var(--space-4);
     align-items: stretch;
     grid-template-areas:
       "bar bar"
@@ -81,10 +83,14 @@
   font-size: 1.05rem;
   line-height: 1.95;
 }
+/* The two surfaces take the height the viewport actually has rather than a
+   fixed 22rem that left a dead band under them on a laptop screen. Clamped at
+   both ends so a short window never crushes them and a tall one never turns
+   them into a canyon. */
 @media (min-width: 58rem) {
   .typingtest__passage,
   .typingtest__field {
-    min-height: 22rem;
+    min-height: clamp(18rem, calc(100dvh - 29rem), 32rem);
   }
 }
 
@@ -105,12 +111,9 @@
   color: var(--text);
 }
 .typingtest__char.is-wrong {
-  color: #b4432f;
-  background: rgba(180, 67, 47, 0.14);
-}
-:root[data-theme="dark"] .typingtest__char.is-wrong {
-  color: #f0a58f;
-  background: rgba(240, 165, 143, 0.16);
+  color: var(--danger);
+  /* mixed from the token so the wash follows the theme's own red */
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
 }
 .typingtest__char.is-cursor {
   box-shadow: inset 2px 0 0 var(--accent);

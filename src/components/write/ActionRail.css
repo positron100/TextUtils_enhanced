@@ -1,12 +1,13 @@
+/* The rail is a column of actions beside the editor, not a second surface
+   competing with it. It carries no panel of its own — no border, no fill, no
+   shadow — so the editor is the only lit object in the composition and the rail
+   reads as margin notes next to it. Everything that used to be the panel's job
+   is done by the grid gap on one side and the hairlines below. */
 .rail {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  padding: var(--space-5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-elevated);
-  box-shadow: var(--shadow-editor);
+  padding-top: var(--space-1);
 }
 
 .rail__section {
@@ -14,13 +15,26 @@
   flex-direction: column;
   gap: var(--space-3);
 }
+/* One hairline between Transform and Clean, rather than a heading heavy enough
+   to separate them on its own. Transform reads as the primary group because it
+   comes first and sits open; Clean reads as secondary because it is below the
+   rule and folded away. */
+.rail__section + .rail__section {
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  padding-top: var(--space-5);
+}
 
 .rail__heading {
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--text-muted);
+}
+/* The secondary group's label steps back: quieter ink, and that is the whole
+   difference in weight between the two headings. */
+.rail__section + .rail__section .rail__heading {
   color: var(--text-faint);
 }
 
@@ -30,17 +44,22 @@
   gap: var(--space-2);
 }
 
+/* With no panel behind them the pills are what carry the rail's presence, so
+   they sit on the elevated surface rather than on the page ground. */
 .rail__pill.glasspill {
   padding: 0.44rem 0.8rem;
   border-color: color-mix(in srgb, var(--border-strong) 80%, transparent);
-  background: var(--bg);
+  background: var(--bg-elevated);
   font-size: 0.82rem;
 }
 
 /* Clean groups --------------------------------------------------------- */
 
+/* The Clean groups are separated by the lightest rule that still reads as a
+   division — six full-strength borders in a column made the rail feel like a
+   stack of boxes rather than one quiet panel. */
 .rail__group {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 .rail__group:first-of-type {
   border-top: none;

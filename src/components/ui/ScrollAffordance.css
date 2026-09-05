@@ -1,0 +1,59 @@
+/* The dock takes no layout space at all: zero height, sticky to the bottom of
+   the scrollport, with the control absolutely positioned inside it. A panel is
+   exactly as tall with the affordance as without it. */
+.scrollhint__dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  height: 0;
+  pointer-events: none;
+}
+
+/* The document scroller's affordance: a fixed corner, clear of the safe area,
+   below the nav (60) and the command palette (100) so it never sits over them. */
+.scrollhint__dock--page {
+  position: fixed;
+  height: auto;
+  right: max(var(--space-4), env(safe-area-inset-right));
+  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  z-index: 50;
+}
+
+.scrollhint {
+  position: absolute;
+  right: var(--space-2);
+  bottom: var(--space-2);
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 50%;
+  border-color: color-mix(in srgb, var(--border-strong) 70%, transparent) !important;
+  background: color-mix(in srgb, var(--bg-elevated) 72%, transparent);
+  color: var(--text-muted);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  backdrop-filter: blur(14px) saturate(1.6);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent) inset,
+    0 10px 24px -14px rgba(20, 16, 12, 0.4);
+  pointer-events: auto;
+  animation: scrollhint-in var(--dur-base) var(--ease-standard) both;
+}
+
+/* It arrives only when it becomes useful, so it arrives rather than appears. */
+@keyframes scrollhint-in {
+  from {
+    opacity: 0;
+    scale: 0.8;
+  }
+}
+.scrollhint__dock--page .scrollhint {
+  position: static;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+/* The arrow turns over rather than being replaced, so the control itself never
+   leaves. The reduced-motion rule in global.css collapses this to a state
+   change, like every other transition in the app. */
+.scrollhint svg {
+  transition: transform var(--dur-base) var(--ease-standard);
+}

@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CATEGORIES, commandSearchText } from "../../lib/commands.js";
 import { fuzzyFilter } from "../../lib/fuzzy.js";
+import ScrollAffordance from "../ui/ScrollAffordance.jsx";
 import "./CommandPalette.css";
 
 const MOD =
@@ -151,6 +152,7 @@ export default function CommandPalette({ commands, recentIds, onRun, onClose }) 
               })}
             </li>
           ))}
+          <ScrollAffordance targetRef={listRef} as="li" role="presentation" />
         </ul>
 
         <p className="cmdk__foot" aria-hidden="true">

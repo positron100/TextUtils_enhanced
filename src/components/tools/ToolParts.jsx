@@ -47,7 +47,7 @@ export function ToolLayout({
           </SpatialSurface>
         </div>
       </div>
-      {controls && <div className="tool__controls">{controls}</div>}
+      {controls && <div className="tool__controls tool__actions">{controls}</div>}
       {message}
     </div>
   );
@@ -87,7 +87,9 @@ export function ToolField({
       </div>
       <textarea
         id={id}
-        className={`dev-surface__area${mono ? " dev-surface__area--mono" : ""}`}
+        className={`dev-surface__area${mono ? " dev-surface__area--mono" : ""}${
+          rows ? " dev-surface__area--rows" : ""
+        }`}
         value={value}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         readOnly={readOnly}

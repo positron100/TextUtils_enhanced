@@ -12,6 +12,32 @@ body,
   height: 100%;
 }
 
+/* No visible scrollbars anywhere — a platform widget in the middle of a glass
+   interface. Only the painted bar goes: wheel, trackpad, touch, keyboard,
+   PageUp/PageDown/Home/End and assistive scrolling are all untouched, and
+   every scroll container keeps its overflow. Where a surface can actually be
+   scrolled, ScrollAffordance shows the arrow in the bar's place.
+
+   A zero-width scrollbar also means no gutter to reserve, so nothing shifts
+   sideways when a view grows past the viewport — the reason `scrollbar-gutter`
+   was here. It is kept as a no-op for engines that ignore the width rules. */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+html {
+  scrollbar-gutter: stable;
+  /* Painting the ground here as well as on <body> is what gives the reserved
+     gutter a colour of its own during a theme reveal — see the
+     `[data-theme-transition]` rules at the foot of this file. Identical value,
+     so nothing changes at rest. */
+  background: var(--bg);
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -61,6 +87,11 @@ button {
    uses the full viewport. */
 
 .page {
+  /* A stacking context above the theme-reveal layer (z-index 0), so the whole
+     interface composites over the sweeping ground instead of being covered by
+     it. The nav, the palette and the intro already sit higher still. */
+  position: relative;
+  z-index: 1;
   min-height: 100dvh;
   padding: calc(var(--nav-height) + var(--space-6)) clamp(var(--space-4), 4vw, var(--space-7))
     var(--space-7);
@@ -171,21 +202,36 @@ button {
     border-radius: 8px;
     border-width: 1.5px;
   }
+  /* The final height overshoots the viewport on purpose. At exactly `100dvh`
+     the last frames of the vertical expansion leave a hairline of the outgoing
+     colour along the top and bottom edges — visible as dark/light bands — and
+     `dvh` can round short of the real viewport anyway. Overshooting puts the
+     seam off-screen; the shape is full-bleed either way, so nothing about the
+     geometry reads differently. */
   100% {
     width: 100vw;
-    height: 100dvh;
+    height: 106dvh;
     border-radius: 0;
     border-width: 0;
   }
 }
 
-/* The theme reveal overlay: the new theme is applied to the page underneath
-   immediately; this masks the rest of the viewport in the OUTGOING page colour
-   and the window (same geometry as IntroReveal) grows to uncover it. */
+/* The theme reveal overlay: a full-viewport CURTAIN in the OUTGOING page
+   colour, sitting ABOVE the entire interface, with the same growing window
+   (shared `@keyframes intro-geo`) cut out of it. The new theme is applied to
+   the page underneath synchronously and instantly, so what the window uncovers
+   is the real, already-re-themed, never-remounted UI — nav, editor, rail,
+   tools, everything — exposed from the centre out. Conceptually identical to
+   the opening reveal; the only difference is what is being revealed.
+
+   z-index 300 puts it over every application layer (nav 60/61, palette 100,
+   intro 200) so no old-theme element can leak outside the window. It is
+   `pointer-events: none` so the toggle keeps receiving pointer moves and the
+   drag-to-scrub gesture still works while the curtain is up. */
 .theme-reveal {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 300;
   overflow: hidden;
   pointer-events: none;
 }
@@ -203,13 +249,25 @@ button {
   will-change: width, height;
   /* keep 1s / cubic-bezier in sync with viewTransition in lib/motion.js and
      with IntroReveal (DURATION_MS). */
-  animation: intro-geo 1s cubic-bezier(0.62, 0, 0.15, 1) forwards;
+  animation: intro-geo var(--reveal-dur) var(--reveal-ease) forwards;
 }
 
-/* Suppress the global colour transition while the reveal plays, so the growing
-   shape is the only motion. */
-html[data-theme-transition] * {
+/* The interface underneath must be FULLY in the destination theme for the
+   whole sweep — it is what the window exposes. Any easing here would show
+   half-swapped colours through the opening, so every transition is suppressed
+   and the palette snaps under the curtain, unseen. The split is purely
+   spatial: outgoing colour outside the window, destination inside. */
+html[data-theme-transition] *,
+html[data-theme-transition] *::before,
+html[data-theme-transition] *::after {
   transition: none !important;
+}
+/* The reserved scrollbar gutter is painted by <html>, the one strip a fixed
+   `inset: 0` overlay cannot cover. Hold it at the outgoing shade for the run
+   so it does not contradict the curtain, then let it snap with the rest when
+   the attribute is removed. */
+html[data-theme-transition] {
+  background: var(--reveal-shade, var(--bg));
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,28 +1,32 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, m } from "framer-motion";
-import { ALGORITHMS } from "../../lib/developer/crypto/index.js";
+// Straight from the registry, not from crypto/index.js: the registry is
+// metadata only, while index.js pulls in @noble/ciphers.
+import { ALGORITHMS } from "../../lib/developer/crypto/registry.js";
 import { duration, ease } from "../../lib/motion.js";
+import ScrollAffordance from "../ui/ScrollAffordance.jsx";
 import "./AlgorithmSelect.css";
 
 /**
  * A themed algorithm picker — a grouped, filterable command-style popover, not
  * a browser <select>. Glass surface, keyboard navigable, sections by family.
  */
-export default function AlgorithmSelect({ value, onChange }) {
+export default function AlgorithmSelect({ value, onChange, algorithms = ALGORITHMS }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
   const rootRef = useRef(null);
   const inputRef = useRef(null);
+  const listRef = useRef(null);
 
-  const current = ALGORITHMS.find((a) => a.id === value) ?? ALGORITHMS[0];
+  const current = algorithms.find((a) => a.id === value) ?? algorithms[0];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return ALGORITHMS.filter(
+    return algorithms.filter(
       (a) => !q || a.label.toLowerCase().includes(q) || a.group.toLowerCase().includes(q),
     );
-  }, [query]);
+  }, [query, algorithms]);
 
   const groups = useMemo(() => {
     const map = new Map();
@@ -55,6 +59,10 @@ export default function AlgorithmSelect({ value, onChange }) {
 
   const onKeyDown = (e) => {
     if (e.key === "Escape") {
+      // Closing this popover is the whole action — without stopping here the
+      // event reaches the app's global Escape handler and navigates out of the
+      // Developer view as well.
+      e.stopPropagation();
       setOpen(false);
       return;
     }
@@ -106,7 +114,7 @@ export default function AlgorithmSelect({ value, onChange }) {
               spellCheck="false"
               autoComplete="off"
             />
-            <div className="algoselect__list">
+            <div className="algoselect__list" ref={listRef}>
               {groups.length === 0 && <p className="algoselect__empty">No match</p>}
               {groups.map(([group, items]) => (
                 <div className="algoselect__group" key={group}>
@@ -139,6 +147,7 @@ export default function AlgorithmSelect({ value, onChange }) {
                   })}
                 </div>
               ))}
+              <ScrollAffordance targetRef={listRef} />
             </div>
           </m.div>
         )}

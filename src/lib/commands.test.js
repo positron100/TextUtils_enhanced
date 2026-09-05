@@ -17,8 +17,26 @@ describe("unified command registry", () => {
       expect(c.label.length).toBeGreaterThan(0);
       expect(CATEGORIES).toContain(c.category);
       expect(Array.isArray(c.keywords)).toBe(true);
-      expect(["transform", "tool", "action"]).toContain(c.type);
-      expect(typeof c.run).toBe("function");
+      expect(["transform", "tool", "action", "view"]).toContain(c.type);
+      // "view" commands are pure navigation — targetView is the whole command.
+      expect(typeof c.run).toBe(c.type === "view" ? "undefined" : "function");
+      expect([null, "write", "developer", "typing", "contact"]).toContain(c.targetView);
+    }
+  });
+
+  it("routes every command to the view it belongs to", () => {
+    const targetOf = (id) => commands.find((c) => c.id === id).targetView;
+    expect(targetOf("lowercase")).toBe("write");
+    expect(targetOf("remove-extra-spaces")).toBe("write");
+    expect(targetOf("find-replace")).toBe("write");
+    expect(targetOf("tool-base64")).toBe("developer");
+    expect(targetOf("view-typing")).toBe("typing");
+    expect(targetOf("view-contact")).toBe("contact");
+    // Appearance is global; it must never drag the stage to another view.
+    expect(targetOf("toggle-theme")).toBe(null);
+
+    for (const c of commands.filter((x) => x.category === "Clean")) {
+      expect(c.targetView).toBe("write");
     }
   });
 

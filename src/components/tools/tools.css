@@ -14,14 +14,20 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
-  align-items: start;
+  /* Stretch, not start: the two panes are one object split in half, so their
+     top and bottom edges have to line up whatever is in them. */
+  align-items: stretch;
 }
 .tool__pane {
   min-width: 0;
 }
+.tool__pane,
 .tool__pane .spatial,
-.tool__pane .spatial__track {
+.tool__pane .spatial__track,
+.tool__pane .spatial__card,
+.tool__pane .dev-surface {
   width: 100%;
+  height: 100%;
 }
 @media (min-width: 60rem) {
   .tool__panes {
@@ -44,8 +50,10 @@
   gap: var(--space-2);
   /* matches the icon-action button height so every head is the same height
      whether or not it carries actions — input / output / the Validated seal
-     all line up. */
-  min-height: 1.9rem;
+     all line up. Fixed rather than a minimum: a label long enough to wrap
+     would otherwise push one pane's editor below the other's. */
+  height: 1.9rem;
+  flex: none;
 }
 .dev-surface__label {
   font-size: 0.72rem;
@@ -53,6 +61,10 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-faint);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .dev-surface__actions {
   display: flex;
@@ -94,6 +106,10 @@
 .validseal__body {
   flex: 1;
   width: 100%;
+  max-width: 100%;
+  /* Long unbroken content must not widen the pane and push the page sideways;
+     the grid track is `minmax(0, 1fr)` so this is what actually holds it. */
+  min-width: 0;
   min-height: 15rem;
   resize: vertical;
   padding: var(--space-5);
@@ -129,17 +145,30 @@
   overflow: hidden;
   position: relative;
 }
+/* Long unbroken strings — base64 ciphertext, hashes, minified JSON — wrap
+   instead of scrolling sideways. `pre-wrap` keeps every space and newline the
+   value actually contains (so formatted JSON stays indented) and `anywhere`
+   lets a run with no spaces in it break at the edge. Textareas soft-wrap, so
+   this is purely visual: the value keeps no character it was not given. */
 .dev-surface__area--mono {
-  white-space: pre;
-  overflow-wrap: normal;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* A field that states its own `rows` is a configuration field (the RSA key
+   boxes), not one of the paired panes — it sizes to those rows instead of
+   inheriting the pane's minimum height and swamping the panel. */
+.dev-surface__area--rows {
+  min-height: 0;
+  flex: none;
 }
 .dev-surface__area::placeholder {
   color: var(--text-faint);
 }
+/* Read-only reads as a result surface, but wraps exactly like the input — the
+   two panes have to be geometrically identical. */
 .dev-surface__area[readonly] {
   background: var(--bg-subtle);
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 .dev-surface__area:focus {
   outline: none;
@@ -234,7 +263,18 @@
 .tool__controls {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-2);
+}
+
+/* The action row under the panes. Its buttons are all full control height
+   whether they are ActionButtons (JSON, Base64, URL, Encryption) or segments
+   (Hash), so the row lands on the same line of the grid in every tool.
+   Segments elsewhere — Regex's flag toggles, Encryption's Format / Key from —
+   keep the smaller height that matches the inputs beside them. */
+.tool__actions .tool__segment {
+  min-height: var(--control-h);
+  padding-inline: var(--space-4);
 }
 
 .tool__segment {
@@ -280,8 +320,21 @@
   color: var(--text-faint);
   line-height: 1.5;
 }
+/* A configuration control and the line that explains it, as one block. The
+   note sits on the control's own left edge and close under it, so it reads as
+   that control's metadata rather than as text floating between two controls.
+   Nothing here depends on the height of the surrounding row, which is what
+   makes it hold for every algorithm — RSA's key fields and the symmetric
+   key-mode row change the config area's height, not this relationship. */
+.encrypt__control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
 .encrypt__algonote {
-  align-self: center;
+  /* A readable measure — the note is a sentence, not a full-width banner. */
+  max-width: 62ch;
 }
 
 .tool__hint {
@@ -301,10 +354,7 @@
   animation: tool-msg-in var(--dur-base) var(--ease-standard);
 }
 .tool__message--error {
-  color: #b4432f;
-}
-:root[data-theme="dark"] .tool__message--error {
-  color: #f0a58f;
+  color: var(--danger);
 }
 .tool__message--success {
   color: var(--accent);
@@ -415,4 +465,10 @@
   .tool__controls .action-btn {
     flex: 1 1 8rem;
   }
+}
+
+/* The regex match list is a flex column with a gap; the affordance's dock is a
+   zero-height child, so cancel the gap it would otherwise inherit. */
+.regex__scrollhint {
+  margin-top: calc(var(--space-1) * -1);
 }

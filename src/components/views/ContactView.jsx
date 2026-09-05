@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, m, useReducedMotion } from "framer-motion";
+import { AnimatePresence, m, useAnimationControls, useReducedMotion } from "framer-motion";
 import Magnetic from "../ui/Magnetic.jsx";
 import { useCopy } from "../../hooks/useCopy.js";
 import { useGhostType } from "../../hooks/useGhostType.js";
-import { ease, spring } from "../../lib/motion.js";
+import { duration, ease, spring } from "../../lib/motion.js";
 import { validateContact } from "../../lib/validateContact.js";
 import { submitContact } from "../../lib/contactService.js";
 import "./ContactView.css";
@@ -26,19 +26,37 @@ const GHOSTS = {
  * The letter writes itself in on view entry — name, then email, then body,
  * each ghost-typed in sequence (skippable, off under reduced motion) — then the
  * visitor takes over. The send sequence folds the same one element into an
- * envelope, seals it and flies it away. Adapted from the portfolio's ContactForm.
+ * envelope, seals it and flies it away; "Write another" runs the same chain
+ * backwards. Adapted from the portfolio's ContactForm.
+ *
+ *   writing   → the letter, editable
+ *   sealing   → content settles out, the paper folds down to envelope
+ *               proportions, the flap rotates shut, the seal presses on
+ *   flying    → the same element arcs away and shrinks into the distance
+ *   delivered → it resolves into the confirmation
+ *   unsealing → the confirmation contracts back into the sealed envelope, the
+ *               seal lifts, the flap opens, the paper unfolds into a blank
+ *               letter, and the ghost intro types itself again
+ *
+ * The card is one DOM element throughout — the paper is the envelope is the
+ * confirmation panel — which is what makes the sequence read as one object.
+ * Every stage is awaited in one chain, so nothing starts before the stage
+ * before it has landed, and `inFlight` makes both directions non-reentrant.
  */
 export default function ContactView() {
   const [values, setValues] = useState(initial);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | submitting | error
-  const [phase, setPhase] = useState("writing"); // writing | sealing | flying | delivered
+  const [phase, setPhase] = useState("writing"); // writing | sealing | flying | delivered | unsealing
   const [ghostStage, setGhostStage] = useState(0); // 0 name · 1 email · 2 message · 3 off
+  // Height the stage holds while the card is folded or in flight, so the page
+  // below never moves during the sequence.
+  const [reservedHeight, setReservedHeight] = useState(null);
 
   const inFlight = useRef(false);
   const honeypot = useRef("");
   const cardRef = useRef(null);
-  const reserved = useRef(null);
+  const card = useAnimationControls();
   const reduce = useReducedMotion();
   const alive = useRef(true);
   useEffect(() => {
@@ -57,7 +75,6 @@ export default function ContactView() {
   const written = useMemo(() => 3 - Object.keys(validateContact(values)).length, [values]);
   const ready = written === 3;
   const sealed = phase !== "writing";
-  const envW = Math.min(ENVELOPE.w, reserved.current?.width ?? ENVELOPE.w);
 
   const setField = (field, value) => {
     setValues((v) => ({ ...v, [field]: value }));
@@ -83,8 +100,9 @@ export default function ContactView() {
       },
     );
 
+    const el = cardRef.current;
     try {
-      if (reduce) {
+      if (!el || reduce) {
         const sent = await request;
         if (!alive.current) return;
         if (sent) {
@@ -96,54 +114,129 @@ export default function ContactView() {
         return;
       }
 
-      const el = cardRef.current;
-      if (el) reserved.current = { width: el.offsetWidth, height: el.offsetHeight };
+      const height = el.offsetHeight;
+      const width = el.offsetWidth;
+
+      // Pin the card at exactly its current size before animating away from it,
+      // so the first frame of the fold is identical to the last frame of the
+      // letter and the fold reads as continuous.
+      card.set({ height, width });
+      setReservedHeight(height);
       setPhase("sealing");
-      await sleep(STAGE.settle + STAGE.fold + STAGE.flap + STAGE.seal);
+
+      await sleep(STAGE.settle);
+      if (!alive.current) return;
+      await card.start(
+        { height: ENVELOPE.h, width: Math.min(ENVELOPE.w, width) },
+        { duration: STAGE.fold / 1000, ease: ease.standard },
+      );
+      // The flap and the seal are the Envelope layer's own delayed animations;
+      // this holds the chain open until they have finished.
+      await sleep(STAGE.flap + STAGE.seal);
       const sent = await request;
       if (!alive.current) return;
 
       if (!sent) {
+        // Unwind: the paper opens back out to exactly the size it was, with
+        // everything the visitor typed still in it.
         setPhase("writing");
+        await card.start({ height, width }, { duration: STAGE.fold / 1000, ease: ease.standard });
+        if (!alive.current) return;
+        card.set({ height: "auto", width: "auto" });
+        setReservedHeight(null);
         setStatus("error");
         return;
       }
 
       setPhase("flying");
-      await sleep(STAGE.fly);
+      await card.start({
+        x: [0, 18, 96],
+        y: [0, 14, -230],
+        rotate: [0, 3, -16],
+        scale: [1, 1.02, 0.3],
+        opacity: [1, 1, 0],
+        transition: { duration: STAGE.fly / 1000, ease: [0.5, 0, 0.3, 1], times: [0, 0.18, 1] },
+      });
       if (!alive.current) return;
+
+      // The card is handed back to the layout in one instant `set` with no
+      // animation of its own: `Delivered` owns the emergence. Exactly one owner,
+      // or the two fight over the same matrix.
+      card.set({ x: 0, y: 0, rotate: 0, scale: 1, opacity: 0, height: "auto", width: "auto" });
       setValues(initial);
       setPhase("delivered");
+      setReservedHeight(null);
+      // The send is finished here. Releasing the lock before the fade matters:
+      // "Write another" is already on screen, and holding it across a purely
+      // decorative animation would swallow that click.
+      inFlight.current = false;
+      // Held at zero across the handoff, then faded in once layout has settled.
+      await card.start({ opacity: 1 }, { duration: duration.surface, ease: ease.standard });
     } finally {
       inFlight.current = false;
     }
   }
 
-  function handleWriteAnother() {
+  /**
+   * The send, run backwards. The confirmation contracts into the sealed
+   * envelope it arrived as, the seal lifts, the flap opens and the paper
+   * unfolds into a blank letter — one element changing shape the whole way —
+   * and the ghost intro starts over on the fresh sheet.
+   */
+  async function handleWriteAnother() {
     if (inFlight.current) return;
+
+    const el = cardRef.current;
     setStatus("idle");
     setErrors({});
-    setPhase("writing");
+    setValues(initial);
+    setGhostStage(0);
+
+    if (!el || reduce) {
+      setPhase("writing");
+      return;
+    }
+
+    inFlight.current = true;
+    try {
+      const height = el.offsetHeight;
+      const width = el.offsetWidth;
+
+      // `opacity: 1` claims the value outright: clicking through the delivered
+      // fade-in interrupts it, and without this the card could be left part-way.
+      card.set({ height, width, opacity: 1 });
+      setReservedHeight(height);
+      setPhase("unsealing");
+
+      await sleep(STAGE.settle);
+      if (!alive.current) return;
+      await card.start(
+        { height: ENVELOPE.h, width: Math.min(ENVELOPE.w, width) },
+        { duration: STAGE.fold / 1000, ease: ease.standard },
+      );
+
+      // The seal lifting and the flap opening are the Envelope layer's own
+      // delayed animations; this holds the chain open until they are done.
+      await sleep(STAGE.seal + STAGE.flap);
+      if (!alive.current) return;
+
+      // The paper opens out and the blank letter fades in with it.
+      setPhase("writing");
+      await card.start(
+        { height: "auto", width: "auto" },
+        { duration: STAGE.fold / 1000, ease: ease.standard },
+      );
+      if (!alive.current) return;
+      setReservedHeight(null);
+    } finally {
+      inFlight.current = false;
+    }
   }
-
-  const cardAnim = {
-    writing: { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1, width: "auto", height: "auto" },
-    sealing: { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1, width: envW, height: ENVELOPE.h },
-    flying: { x: 96, y: -230, rotate: -15, scale: 0.28, opacity: 0, width: envW, height: ENVELOPE.h },
-    delivered: { x: 0, y: 0, rotate: 0, scale: 1, opacity: 1, width: "auto", height: "auto" },
-  }[phase];
-
-  const cardTransition =
-    phase === "flying"
-      ? { duration: STAGE.fly / 1000, ease: [0.5, 0, 0.3, 1] }
-      : phase === "sealing"
-        ? { duration: STAGE.fold / 1000, delay: STAGE.settle / 1000, ease: ease.standard }
-        : { duration: STAGE.fold / 1000, ease: ease.standard };
 
   return (
     <div className="contactview">
       <div className="contactview__intro">
-        <p className="hero__kicker">Contact</p>
+        <h1 className="hero__kicker">Contact</h1>
         <h2 className="contactview__title">Made by Mukul. Say hello.</h2>
         <p className="contactview__text">
           TextUtils is a personal project — everything runs locally in your browser. Found a bug,
@@ -152,16 +245,13 @@ export default function ContactView() {
         <EmailCopy />
       </div>
 
-      <div
-        className="contactview__stage"
-        style={{ minHeight: sealed ? reserved.current?.height : undefined }}
-      >
+      <div className="contactview__stage" style={{ minHeight: reservedHeight ?? undefined }}>
         <FlightTrail active={phase === "flying"} />
 
         <m.div
           ref={cardRef}
-          animate={cardAnim}
-          transition={cardTransition}
+          animate={card}
+          data-phase={phase}
           style={{ perspective: 1000, transformOrigin: "50% 58%" }}
           className="contactcard"
         >
@@ -290,14 +380,29 @@ function EmailCopy() {
 
 function Envelope({ phase }) {
   const sealing = phase === "sealing" || phase === "flying";
+  const unsealing = phase === "unsealing";
+  const shown = sealing || unsealing;
   const t = (ms) => ms / 1000;
   const lead = t(STAGE.settle);
+
+  // Closing runs sides → flap → seal; opening runs seal → flap → sides. The
+  // opening targets are two-value keyframes so each part snaps to its sealed
+  // state on the first frame and animates out of it.
+  const sides = unsealing
+    ? { to: [1, 0.12], delay: lead + t(STAGE.fold + STAGE.seal), duration: t(STAGE.flap) }
+    : { to: shown ? 1 : 0.12, delay: shown ? lead : 0, duration: t(STAGE.fold) };
+  const flap = unsealing
+    ? { to: [0, -160], delay: lead + t(STAGE.fold + STAGE.seal), duration: t(STAGE.flap) }
+    : { to: shown ? 0 : -160, delay: shown ? lead + t(STAGE.fold) : 0, duration: t(STAGE.flap) };
+  const seal = unsealing
+    ? { to: [1, 0], delay: lead + t(STAGE.fold) }
+    : { to: shown ? 1 : 0, delay: shown ? lead + t(STAGE.fold + STAGE.flap) : 0 };
 
   return (
     <div aria-hidden="true" className="envelope" style={{ perspective: 1000 }}>
       <m.div
         initial={false}
-        animate={{ opacity: sealing ? 1 : 0 }}
+        animate={{ opacity: shown ? 1 : 0 }}
         transition={{ duration: 0.2, delay: sealing ? lead : 0 }}
         className="envelope__inner"
       >
@@ -305,21 +410,21 @@ function Envelope({ phase }) {
           <m.div
             key={side}
             initial={false}
-            animate={{ scaleX: sealing ? 1 : 0.12 }}
-            transition={{ duration: t(STAGE.fold), delay: sealing ? lead : 0, ease: ease.standard }}
+            animate={{ scaleX: sides.to }}
+            transition={{ duration: sides.duration, delay: sides.delay, ease: ease.standard }}
             className={`envelope__side envelope__side--${side}`}
           />
         ))}
         <m.div
           initial={false}
-          animate={{ rotateX: sealing ? 0 : -160 }}
-          transition={{ duration: t(STAGE.flap), delay: sealing ? lead + t(STAGE.fold) : 0, ease: ease.standard }}
+          animate={{ rotateX: flap.to }}
+          transition={{ duration: flap.duration, delay: flap.delay, ease: ease.standard }}
           className="envelope__flap"
         />
         <m.div
           initial={false}
-          animate={{ scale: sealing ? 1 : 0 }}
-          transition={{ delay: sealing ? lead + t(STAGE.fold + STAGE.flap) : 0, type: "spring", stiffness: 520, damping: 14 }}
+          animate={{ scale: seal.to }}
+          transition={{ delay: seal.delay, type: "spring", stiffness: 520, damping: 14 }}
           className="envelope__seal"
         >
           MN

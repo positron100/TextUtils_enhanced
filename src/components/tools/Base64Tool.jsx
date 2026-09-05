@@ -22,7 +22,6 @@ export default function Base64Tool({ editorText }) {
           onChange={io.setInput}
           mono
           placeholder="Text to encode, or Base64 to decode"
-          rows={8}
           onClear={io.clearInput}
         />
       }
@@ -41,7 +40,6 @@ export default function Base64Tool({ editorText }) {
           value={io.output}
           readOnly
           mono
-          rows={8}
           onCopy={io.copyOutput}
           onClear={io.clearOutput}
         />

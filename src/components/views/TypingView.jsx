@@ -32,7 +32,7 @@ export default function TypingView() {
     <div className="typingview">
       <div className="typingview__head">
         <div>
-          <p className="hero__kicker">Typing Speed</p>
+          <h1 className="hero__kicker">Typing Speed</h1>
           <h2 className="typingview__title">Measure your pace.</h2>
         </div>
         <div className="typingview__modes" role="group" aria-label="Typing mode">

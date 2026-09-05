@@ -1,9 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useCopy } from "../../hooks/useCopy.js";
-import { compileRegex, runRegex } from "../../lib/developer/regex.js";
+import { useRegexRun } from "../../hooks/useRegexRun.js";
 import HighlightedTextarea from "./HighlightedTextarea.jsx";
 import SpatialSurface from "../SpatialSurface.jsx";
 import { ToolMessage } from "./ToolParts.jsx";
+import ScrollAffordance from "../ui/ScrollAffordance.jsx";
 
 const MAX_TEST_LENGTH = 50_000;
 const FLAGS = [
@@ -21,26 +22,25 @@ export default function RegexTool({ editorText }) {
   const { status: copyStatus, copy } = useCopy();
   const patternId = useId();
   const fieldRef = useRef(null);
+  const matchesRef = useRef(null);
 
   useEffect(() => {
     if (clearSeq) fieldRef.current?.querySelector("textarea")?.focus();
   }, [clearSeq]);
 
-  const { error, matches, count, truncated, ranges } = useMemo(() => {
-    if (!pattern) return { matches: [], count: 0 };
-    const compiled = compileRegex(pattern, flags);
-    if (!compiled.ok) return { error: compiled.error.message };
-    if (test.length > MAX_TEST_LENGTH) {
-      return { error: `Test string is capped at ${MAX_TEST_LENGTH.toLocaleString()} characters for live matching` };
-    }
-    const result = runRegex(compiled.regex, test);
-    return {
-      matches: result.matches,
-      count: result.count,
-      truncated: result.truncated,
-      ranges: result.matches.map((m) => ({ start: m.index, end: m.index + m.text.length })),
-    };
-  }, [pattern, test, flags]);
+  const tooLong = test.length > MAX_TEST_LENGTH;
+  // Matching runs in a worker (see useRegexRun) so a backtracking pattern
+  // cannot take the page with it.
+  const run = useRegexRun(tooLong ? "" : pattern, test, flags);
+  const error = tooLong && pattern
+    ? `Test string is capped at ${MAX_TEST_LENGTH.toLocaleString()} characters for live matching`
+    : run.error;
+  const matches = error ? [] : run.matches;
+  const { count, truncated } = run;
+  const ranges = useMemo(
+    () => matches.map((m) => ({ start: m.index, end: m.index + m.text.length })),
+    [matches],
+  );
 
   const toggle = (key) => setFlags((f) => ({ ...f, [key]: !f[key] }));
 
@@ -133,7 +133,7 @@ export default function RegexTool({ editorText }) {
       )}
 
       {matches && matches.length > 0 && (
-        <ol className="regex__matches">
+        <ol className="regex__matches" ref={matchesRef}>
           {matches.slice(0, 100).map((m, i) => (
             <li key={i} className="regex__match">
               <code className="regex__matchtext">{m.text || "(empty)"}</code>
@@ -149,6 +149,7 @@ export default function RegexTool({ editorText }) {
               )}
             </li>
           ))}
+          <ScrollAffordance targetRef={matchesRef} as="li" className="regex__scrollhint" />
         </ol>
       )}
     </div>

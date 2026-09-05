@@ -5,10 +5,13 @@
 // the two are literally the same animation replayed in a theme-switch context.
 //
 // How the reveal reads: the new theme is applied to the page underneath
-// straight away; the overlay masks the rest of the viewport in the OUTGOING
-// page colour, and the window uncovers the real (already re-themed) UI from the
-// centre out. Drag-to-scrub maps drag progress onto this animation's
-// currentTime (see useThemeToggleController).
+// synchronously and with every colour transition suppressed, so the whole app
+// is already the destination theme before a frame is drawn. The overlay is a
+// curtain ABOVE the entire interface (z-index 300) in the OUTGOING page
+// colour, and the growing window is a hole in it, uncovering the real,
+// still-mounted, already-re-themed UI from the centre out. Drag-to-scrub maps
+// drag progress onto this animation's currentTime (see
+// useThemeToggleController).
 //
 // Guards preserved:
 //  1. data-theme applied synchronously so the page underneath is the new theme
@@ -53,6 +56,9 @@ export async function startThemeReveal(next, applyTheme, options = {}) {
 
   if (prefersReducedMotionNow()) return null;
 
+  // Published on the root so BOTH the curtain slab and the <html> scrollbar
+  // gutter paint the outgoing shade (see global.css).
+  root.style.setProperty("--reveal-shade", outgoingShade);
   root.setAttribute("data-theme-transition", next);
 
   const overlay = document.createElement("div");
@@ -61,7 +67,6 @@ export async function startThemeReveal(next, applyTheme, options = {}) {
 
   const windowEl = document.createElement("div");
   windowEl.className = "theme-reveal__window";
-  windowEl.style.setProperty("--reveal-shade", outgoingShade);
   overlay.appendChild(windowEl);
   document.body.appendChild(overlay);
 
@@ -72,6 +77,7 @@ export async function startThemeReveal(next, applyTheme, options = {}) {
   if (!animation) {
     overlay.remove();
     root.removeAttribute("data-theme-transition");
+    root.style.removeProperty("--reveal-shade");
     return null;
   }
 
@@ -89,6 +95,7 @@ export async function startThemeReveal(next, applyTheme, options = {}) {
     }
     if (activeReveal === record) {
       root.removeAttribute("data-theme-transition");
+      root.style.removeProperty("--reveal-shade");
       activeReveal = null;
     }
   };

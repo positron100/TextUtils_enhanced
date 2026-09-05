@@ -88,9 +88,34 @@ secret. **Nothing is sent anywhere** — plaintext, ciphertext, keys and
 passwords stay in the page and nothing is logged; the Contact API is unrelated.
 Sensitive fields are dropped when the view / tool changes.
 
+A **Format** selector chooses between two ciphertext formats — never sniffed
+from the input, because the format is what decides how a key is derived:
+
+| Format | |
+| --- | --- |
+| **TextUtils (TUC1)** | the above — PBKDF2, random IV, `TUC1.` envelope |
+| **Compatible / Raw AES** | bare base64, AES-{256,192,128} |
+
+The compatible format reproduces what OpenSSL's `aes256` / `aes192` / `aes128`
+aliases produce (as used by PHP's `openssl_encrypt` and the online tools built
+on it): **AES-CBC**, the secret's UTF-8 bytes used *directly* as the key
+(zero-padded, truncated past the key length), an **all-zero IV**, PKCS#7
+padding, base64 out — no salt, no header, no MAC. It was determined by
+experiment against a real implementation, and `openssl-compat.test.js` pins it
+with ciphertext that implementation actually produced; interop is exact in both
+directions (identical bytes, since the format is deterministic). It exists to
+read and write other tools' ciphertext and is **much weaker** than TUC1 — no
+key stretching, a fixed IV, and no tamper detection — so it is labelled as such
+in the UI and is never the default.
+
 **Command palette** (`Ctrl/Cmd+K`) — fuzzy search across every action (40+),
 grouped by category, Recent section, full keyboard control. The single
-discovery surface.
+discovery surface — including the four primary views themselves, under **Go
+to**. Every command carries the view it belongs to (`targetView` in
+`commands.js`, derived from its category), so choosing one from anywhere slides
+the stage to that view first — the same physical horizontal pass the nav and
+drag use — and runs the action once it has arrived. Actions that work anywhere
+(the theme toggle) never move the stage.
 
 **History** — a compact timeline popover; click any checkpoint to restore it.
 In memory only, capped at 100.

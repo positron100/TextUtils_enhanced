@@ -124,3 +124,55 @@
     min-height: 12rem;
   }
 }
+
+/* --- Find & Replace highlight mirror ---------------------------------------
+   Only in the DOM while there are matches. Every box metric here must stay
+   identical to `.editor__area` above or the marks drift off the glyphs. */
+.editor__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  padding: var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-family: var(--font-editor);
+  font-size: var(--editor-size);
+  line-height: var(--editor-leading);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  pointer-events: none;
+}
+
+.editor__backdrop mark {
+  border-radius: 3px;
+  color: inherit;
+  background: var(--accent-weak);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+/* The match you are on: the same family, turned up. */
+.editor__backdrop mark[data-current] {
+  background: color-mix(in srgb, var(--accent) 34%, transparent);
+  box-shadow: 0 0 0 1px var(--accent-ring);
+}
+
+/* The textarea keeps its caret, selection and spellcheck; only its glyphs and
+   ground step aside so the mirror behind is what you read. */
+.editor[data-marking] .editor__area {
+  position: relative;
+  z-index: 1;
+  color: transparent;
+  background: transparent;
+}
+.editor[data-marking] .editor__area::selection {
+  background: var(--selection);
+}
+
+@media (max-width: 30rem) {
+  .editor__backdrop {
+    padding: var(--space-4);
+    font-size: 1.05rem;
+  }
+}

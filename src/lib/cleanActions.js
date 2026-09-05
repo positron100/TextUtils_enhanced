@@ -1,5 +1,5 @@
 // The Clean toolkit as data: id, label, group, and a pure (string → string)
-// transform. Rendered by CleanMenu now; folded into the command palette in D4.
+// transform. Surfaced through the command palette and the Write action rail.
 
 import {
   trimLines,

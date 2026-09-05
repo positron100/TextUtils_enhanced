@@ -25,11 +25,23 @@ import {
   parsePayload,
   stripPem,
   randomBytes,
+  unquote,
 } from "./encode.js";
 import { getAlgorithm, allowedKeyBytes } from "./registry.js";
+import { opensslEncrypt, opensslDecrypt } from "./openssl.js";
 
-export { ALGORITHMS, ALGORITHM_GROUPS, getAlgorithm, RSA_HASHES } from "./registry.js";
-export { parsePayload, parseRawKey, randomKeyHex } from "./encode.js";
+export {
+  ALGORITHMS,
+  ALGORITHM_GROUPS,
+  getAlgorithm,
+  RSA_HASHES,
+  FORMATS,
+  getFormat,
+  algorithmsForFormat,
+  defaultAlgorithmFor,
+  keyBitsOf,
+} from "./registry.js";
+export { parsePayload, parseRawKey, randomKeyHex, unquote } from "./encode.js";
 
 const PBKDF2_ITERATIONS = 250_000;
 const PBKDF2_HASH = "SHA-256";
@@ -107,6 +119,16 @@ export async function encrypt(params) {
   if (!params.secret) {
     throw new Error(params.keyMode === "raw" ? "Enter a key." : "Enter a password.");
   }
+
+  // The compatible format is bare base64 — no TUC1 envelope, because the point
+  // is that another tool can read it.
+  if (algo.engine === "openssl") {
+    return opensslEncrypt({
+      secret: params.secret,
+      plaintext: params.plaintext,
+      keyBytes: algo.compat.keyBytes,
+    });
+  }
   const meta = { v: 1, alg: algo.id };
   const iv = algo.ivBytes ? randomBytes(algo.ivBytes) : new Uint8Array(0);
   if (algo.ivBytes) meta.iv = bytesToB64(iv);
@@ -123,7 +145,24 @@ export async function encrypt(params) {
  * @returns {Promise<string>} plaintext
  */
 export async function decrypt(params) {
-  const meta = parsePayload(params.payload);
+  // One normalisation for every format, before anything tries to read the
+  // bytes: what the editor holds is left exactly as pasted.
+  const payload = unquote(params.payload);
+
+  // Compatible / raw ciphertext carries no metadata, so the algorithm comes
+  // from the caller's explicit choice rather than from the payload. The TUC1
+  // path below is unchanged and still requires its envelope.
+  const stated = params.algorithmId ? getAlgorithm(params.algorithmId) : null;
+  if (stated?.engine === "openssl") {
+    if (!params.secret) throw new Error("Enter the password or key used to encrypt.");
+    return opensslDecrypt({
+      secret: params.secret,
+      ciphertext: payload,
+      keyBytes: stated.compat.keyBytes,
+    });
+  }
+
+  const meta = parsePayload(payload);
   const algo = getAlgorithm(meta.alg);
   if (!algo) throw new Error(`Payload uses an unsupported algorithm: ${meta.alg}`);
 

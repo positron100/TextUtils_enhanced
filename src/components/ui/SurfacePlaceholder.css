@@ -1,0 +1,39 @@
+/* Held back for 220ms: a chunk that arrives before then is never announced by
+   a flash of skeleton. Uses the same surface tokens as the panel it stands in
+   for, so the swap to the real thing is a content change, not a repaint. */
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 12rem;
+  padding: var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-elevated) 60%, transparent);
+  opacity: 0;
+  animation: placeholder-in var(--dur-surface) var(--ease-standard) 220ms forwards;
+}
+
+.placeholder__bar {
+  height: 0.75rem;
+  width: 100%;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+}
+.placeholder__bar--title {
+  width: 34%;
+  height: 1rem;
+  margin-bottom: var(--space-2);
+}
+.placeholder__bar:nth-child(3) {
+  width: 88%;
+}
+.placeholder__bar:last-child {
+  width: 62%;
+}
+
+@keyframes placeholder-in {
+  to {
+    opacity: 1;
+  }
+}

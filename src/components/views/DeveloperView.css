@@ -1,9 +1,20 @@
+/* Vertical rhythm, deliberate rather than one uniform gap: the kicker belongs
+   to the tabs (tight), and the tab strip is a separate step above the bench
+   (wider). Inside the panel the title sits one --space-4 above the tool, so the
+   sequence reads label → tabs → bench → title → I/O with intent at each step. */
 .developerview {
   max-width: 96rem;
   margin-inline: auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
+}
+/* The kicker labels the tab strip, so the two are one cluster. */
+.developerview__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
 }
 
 .developerview__tabs {
@@ -39,7 +50,17 @@
   width: 100%;
 }
 
+/* The panel owns one vertical rhythm for everything inside it. The title used
+   to carry its own margin, so a tool with a hint and a tool without one opened
+   with different spacing above the panes; now every gap in the workbench is
+   the same step. */
 .developerview__panel {
+  display: flex;
+  flex-direction: column;
+  /* The same step the tab strip sits above this panel by, so the whole column
+     — DEVELOPER → tabs → title → I/O — advances on one rhythm: --space-2 inside
+     a cluster, --space-5 between them. */
+  gap: var(--space-5);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--bg-elevated);
@@ -53,7 +74,7 @@
 }
 
 .developerview__title {
-  margin: 0 0 var(--space-2);
+  margin: 0;
   font-size: 1.05rem;
   font-weight: 600;
   display: flex;

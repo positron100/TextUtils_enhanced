@@ -201,7 +201,8 @@ describe("App — developer tools", () => {
     const surface = await screen.findByRole("region", { name: /developer tools/i });
     await user.click(within(surface).getByRole("tab", { name: "Base64" }));
 
-    await user.click(within(surface).getByRole("button", { name: /^encode$/i }));
+    // each tool is its own lazy chunk now — wait for it, not just for the tab
+    await user.click(await within(surface).findByRole("button", { name: /^encode$/i }));
     expect(await within(surface).findByLabelText("Result")).toHaveValue("Y2Fmw6kg8J+YgA==");
 
     await user.keyboard("{Escape}");
@@ -218,7 +219,7 @@ describe("App — developer tools", () => {
     await user.click(screen.getByRole("button", { name: "Developer" }));
     const surface = await screen.findByRole("region", { name: /developer tools/i });
     await user.click(within(surface).getByRole("tab", { name: "Regex" }));
-    await user.type(within(surface).getByLabelText(/pattern/i), "\\d+");
+    await user.type(await within(surface).findByLabelText(/pattern/i), "\\d+");
 
     expect(await within(surface).findByText(/^3 matches/)).toBeInTheDocument();
   });
@@ -288,6 +289,15 @@ describe("App — contact", () => {
 
     expect(await screen.findByText(/message delivered/i)).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith("/api/contact", expect.objectContaining({ method: "POST" }));
+
+    // "Write another" reopens the same letter — blank, and writable again.
+    await user.click(within(form).getByRole("button", { name: /write another/i }));
+    const name = await within(form).findByLabelText(/my name is/i);
+    expect(name).toHaveValue("");
+    expect(within(form).getByLabelText(/wanted to say/i)).toHaveValue("");
+    expect(within(form).queryByText(/message delivered/i)).not.toBeInTheDocument();
+    await user.type(name, "Jane again");
+    expect(name).toHaveValue("Jane again");
     vi.unstubAllGlobals();
   });
 
@@ -342,6 +352,43 @@ describe("App — command palette", () => {
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(getEditor()).toHaveValue("MAKE ME SHOUT");
+  });
+
+  it("navigates to the command's own view first, then runs it there", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.type(getEditor(), "Shout From Contact");
+
+    const current = () =>
+      screen.getByRole("button", { current: "page" }).textContent.trim();
+
+    // Leave Write entirely.
+    await user.click(screen.getByRole("button", { name: "Contact" }));
+    await screen.findByRole("heading", { name: /say hello/i });
+    expect(current()).toBe("Contact");
+
+    await user.keyboard("{Control>}k{/Control}");
+    const dialog = await screen.findByRole("dialog");
+    await user.type(within(dialog).getByRole("combobox"), "upper");
+    await user.keyboard("{Enter}");
+
+    // The stage moved to Write and the transform ran there, on the text the
+    // editor was still holding.
+    await waitFor(() => expect(current()).toBe("Write"));
+    await waitFor(() => expect(getEditor()).toHaveValue("SHOUT FROM CONTACT"));
+
+    // A developer tool command routes to Developer and opens that tool.
+    await user.keyboard("{Control>}k{/Control}");
+    const dialog2 = await screen.findByRole("dialog");
+    await user.type(within(dialog2).getByRole("combobox"), "base64");
+    await user.keyboard("{Enter}");
+    await waitFor(() => expect(current()).toBe("Developer"));
+    await waitFor(() =>
+      expect(screen.getByRole("tab", { name: /base64/i })).toHaveAttribute(
+        "aria-selected",
+        "true",
+      ),
+    );
   });
 
   it("keyboard-navigates the list and shows a run command under Recent", async () => {

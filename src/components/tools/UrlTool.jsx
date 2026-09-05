@@ -28,7 +28,6 @@ export default function UrlTool({ editorText }) {
           onChange={io.setInput}
           mono
           placeholder="https://example.com/a b?q=x"
-          rows={7}
           onClear={io.clearInput}
         />
       }
@@ -49,7 +48,6 @@ export default function UrlTool({ editorText }) {
           value={io.output}
           readOnly
           mono
-          rows={7}
           onCopy={io.copyOutput}
           onClear={io.clearOutput}
         />

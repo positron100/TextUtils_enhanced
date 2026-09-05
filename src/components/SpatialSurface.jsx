@@ -16,22 +16,30 @@ import "./SpatialSurface.css";
  *
  * Optional `drag`: `{ onNavigate, canPrev, canNext }` makes the surface
  * swipeable; `renderPeek(dir)` draws the adjacent card while dragging.
+ *
+ * Optional `onSettled`: called once an incoming card has finished arriving —
+ * however it was triggered (nav, drag, ⌘K). The command palette uses it to run
+ * a command only after its view is actually on stage.
  */
 export default function SpatialSurface({
   trackKey,
   direction = 0,
   drag,
+  dragController,
   renderPeek,
   nested = false,
   className = "",
   cardClassName = "",
   label,
+  onSettled,
   children,
 }) {
-  const enabled = !!drag?.onNavigate;
-  const { x, handlers, dragging, dragDir } = useSwipeNav(
-    drag ?? { onNavigate: null, canPrev: false, canNext: false },
-  );
+  // A nested surface owns its gesture; the primary stage is handed one it
+  // shares with the nav bar, so both drive the same translation.
+  const own = useSwipeNav(drag ?? { onNavigate: null, canPrev: false, canNext: false });
+  const ctrl = dragController ?? own;
+  const { x, handlers, dragging, dragDir, registerStage } = ctrl;
+  const enabled = !!(dragController || drag?.onNavigate);
 
   const card = (
     <m.div
@@ -42,6 +50,10 @@ export default function SpatialSurface({
       animate="center"
       exit="exit"
       transition={spatialTransition}
+      onAnimationComplete={(definition) => {
+        // Only the arrival, never the exit of the card being replaced.
+        if (definition === "center") onSettled?.();
+      }}
       className={`spatial__card ${cardClassName}`.trim()}
       aria-label={label}
     >
@@ -50,7 +62,11 @@ export default function SpatialSurface({
   );
 
   return (
-    <div className={`spatial ${className}`.trim()} {...(enabled ? handlers : {})}>
+    <div
+      className={`spatial ${className}`.trim()}
+      ref={registerStage}
+      {...(enabled ? handlers : {})}
+    >
       {enabled && renderPeek && dragging && dragDir !== 0 && (
         <m.div
           className="spatial__peek"

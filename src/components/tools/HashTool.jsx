@@ -45,7 +45,6 @@ export default function HashTool({ editorText }) {
           value={input}
           onChange={io.setInput}
           placeholder="Text to hash"
-          rows={6}
           onClear={io.clearInput}
         />
       }
@@ -69,7 +68,6 @@ export default function HashTool({ editorText }) {
           value={io.output}
           readOnly
           mono
-          rows={6}
           onCopy={io.copyOutput}
           onClear={io.clearOutput}
         />

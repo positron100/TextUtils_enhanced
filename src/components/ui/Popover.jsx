@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import ScrollAffordance from "./ScrollAffordance.jsx";
 import "./Popover.css";
 
 /**
@@ -105,6 +106,7 @@ export default function Popover({
           onKeyDown={onKeyDown}
         >
           {typeof children === "function" ? children(() => close()) : children}
+          <ScrollAffordance targetRef={menuRef} role="none" />
         </div>
       )}
     </div>

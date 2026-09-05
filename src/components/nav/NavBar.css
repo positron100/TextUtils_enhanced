@@ -11,12 +11,23 @@
 .nav__bar {
   position: relative;
   pointer-events: auto;
+  /* Vertical scrolling stays the browser's; horizontal is the nav gesture's —
+     the same contract the view stage uses. */
+  touch-action: pan-y;
+  /* Unconditional, not only while dragging. The bar's labels are controls, not
+     content to select, and leaving them selectable let the browser start a
+     native text-selection drag over a pill the moment the pointer moved — it
+     then claimed the gesture and fired `pointercancel`, killing every drag
+     after the first. Setting this from a `data-dragging` attribute is too
+     late: the selection begins before that state has landed. */
+  user-select: none;
+  -webkit-user-select: none;
   width: 100%;
-  max-width: 68rem;
+  max-width: 72rem;
   min-height: var(--nav-height);
   display: flex;
   align-items: center;
-  gap: var(--space-5);
+  gap: var(--space-6);
   padding: var(--space-2) var(--space-3) var(--space-2) var(--space-5);
   border: 1px solid transparent;
   border-radius: var(--radius-pill);
@@ -25,6 +36,13 @@
     border-color var(--dur-surface) var(--ease-standard),
     box-shadow var(--dur-surface) var(--ease-standard),
     backdrop-filter var(--dur-surface) var(--ease-standard);
+}
+/* Only once a drag is actually under way — a plain hover keeps the pointer. */
+.nav__bar[data-dragging] {
+  cursor: grabbing;
+}
+.nav__bar[data-dragging] * {
+  cursor: grabbing;
 }
 
 .nav__bar[data-scrolled],
@@ -56,6 +74,15 @@
   opacity: 1;
 }
 
+/* The wordmark end of the bar. On a phone this is row one and the burger
+   joins it; on desktop it is just the left edge. */
+.nav__lead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
 .nav__brand {
   flex-shrink: 0;
   border: none;
@@ -71,7 +98,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   margin: 0 auto;
 }
 
@@ -98,6 +125,11 @@
   align-items: center;
   gap: var(--space-2);
   flex-shrink: 0;
+}
+/* The theme toggle's swipe opt-out wrapper must not add a box of its own. */
+.nav__actions > [data-no-swipe] {
+  display: inline-flex;
+  align-items: center;
 }
 
 .nav__search {
@@ -126,10 +158,12 @@
   color: var(--text-faint);
 }
 
+/* Rendered only in the compact composition (see NavBar.jsx) — there is no
+   desktop burger to hide. */
 .nav__burger {
-  display: none;
-  width: var(--control-h-sm);
-  height: var(--control-h-sm);
+  display: inline-flex;
+  width: var(--control-h);
+  height: var(--control-h);
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border-strong);
@@ -167,7 +201,7 @@
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-2);
   padding: var(--space-3);
   border: 1px solid color-mix(in srgb, var(--border-strong) 65%, transparent);
   border-radius: var(--radius-lg);
@@ -181,20 +215,30 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: var(--space-3);
-  border: none;
-  border-radius: var(--radius-sm);
+  min-height: 3.25rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
   background: none;
   color: var(--text);
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 550;
+  letter-spacing: -0.01em;
   text-align: left;
   cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-base) var(--ease-standard),
+    box-shadow var(--dur-base) var(--ease-standard);
 }
+/* The active destination carries the same liquid marker treatment as the
+   desktop indicator, so the menu is the same navigation system rather than a
+   dropdown that happens to list the same links. */
 .nav__menuitem[data-active] {
   color: var(--accent);
   background: var(--accent-weak);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent),
+    0 6px 16px -10px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 @media (hover: hover) {
   .nav__menuitem:hover {
@@ -206,26 +250,49 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3);
-  margin-top: var(--space-1);
+  min-height: 3.25rem;
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  margin-top: var(--space-3);
   border-top: 1px solid var(--border);
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
+/* Two rows: wordmark + menu, then the search control across the full content
+   width. Nothing else competes with them — the theme toggle lives in the menu.
+   Same breakpoint the nav has always used. */
 @media (max-width: 54rem) {
-  .nav__items,
-  .nav__searchtext,
-  .nav__search kbd {
-    display: none;
+  .nav__bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
   }
-  .nav__burger {
-    display: inline-flex;
+  .nav__lead {
+    justify-content: space-between;
+  }
+  .nav__brand {
+    font-size: 1.05rem;
+  }
+  .nav__actions {
+    width: 100%;
   }
   .nav__search {
-    width: var(--control-h-sm);
-    padding: 0;
-    justify-content: center;
+    width: 100%;
+    height: var(--control-h);
+    padding: 0 var(--space-3) 0 var(--space-4);
+  }
+  /* The label spans the row so the icon and text sit left and the shortcut is
+     pushed to the right edge — the search reads as a field, not a pill. */
+  .nav__search .glasspill__label {
+    width: 100%;
+  }
+  .nav__search kbd {
+    margin-left: auto;
+  }
+  .nav__menu {
+    top: calc(100% + var(--space-3));
   }
 }
 

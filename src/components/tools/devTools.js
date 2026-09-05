@@ -1,13 +1,11 @@
-// Developer-tool registry. Shaped so D4 can fold it into the unified command
-// registry (id / label / category / description / keywords) and swap `Component`
-// for a lazy import without touching consumers.
-
-import JsonTool from "./JsonTool.jsx";
-import Base64Tool from "./Base64Tool.jsx";
-import UrlTool from "./UrlTool.jsx";
-import HashTool from "./HashTool.jsx";
-import RegexTool from "./RegexTool.jsx";
-import EncryptTool from "./EncryptTool.jsx";
+// Developer-tool registry: METADATA ONLY.
+//
+// Deliberately free of component imports. The unified command registry
+// (lib/commands.js) reads this list so every tool is reachable from ⌘K, and
+// commands.js is part of the initial bundle — so importing the tool components
+// here would drag every developer tool, and @noble/ciphers with them, into the
+// first load of the Write view. DeveloperView resolves the components lazily
+// instead (see its `TOOL_COMPONENTS` map).
 
 export const DEV_TOOLS = [
   {
@@ -16,7 +14,6 @@ export const DEV_TOOLS = [
     category: "Developer",
     description: "Format, minify, and validate",
     keywords: ["json", "pretty", "format", "minify", "validate", "beautify"],
-    Component: JsonTool,
   },
   {
     id: "base64",
@@ -24,7 +21,6 @@ export const DEV_TOOLS = [
     category: "Developer",
     description: "Encode and decode (UTF-8 safe)",
     keywords: ["base64", "encode", "decode", "btoa", "atob"],
-    Component: Base64Tool,
   },
   {
     id: "url",
@@ -32,7 +28,6 @@ export const DEV_TOOLS = [
     category: "Developer",
     description: "Percent-encode and decode",
     keywords: ["url", "uri", "encode", "decode", "percent", "escape", "query", "component"],
-    Component: UrlTool,
   },
   {
     id: "hash",
@@ -40,7 +35,6 @@ export const DEV_TOOLS = [
     category: "Developer",
     description: "SHA-256 / 384 / 512 digest",
     keywords: ["hash", "sha", "sha256", "sha384", "sha512", "digest", "checksum", "crypto"],
-    Component: HashTool,
   },
   {
     id: "regex",
@@ -48,7 +42,6 @@ export const DEV_TOOLS = [
     category: "Developer",
     description: "Test patterns against a string",
     keywords: ["regex", "regexp", "pattern", "match", "test", "capture"],
-    Component: RegexTool,
   },
   {
     id: "encrypt",
@@ -67,7 +60,6 @@ export const DEV_TOOLS = [
       "password",
       "secret",
     ],
-    Component: EncryptTool,
   },
 ];
 

@@ -3,11 +3,17 @@ import { AnimatePresence, m } from "framer-motion";
 import ThemeToggle from "../ThemeToggle.jsx";
 import GlassPill from "../ui/GlassPill.jsx";
 import LiquidIndicator from "../ui/LiquidIndicator.jsx";
+import { useMediaQuery } from "../../hooks/useMediaQuery.js";
 import { duration, ease, spring } from "../../lib/motion.js";
 import "./NavBar.css";
 
 const MOD =
   typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform) ? "⌘" : "Ctrl";
+
+/** The one responsive breakpoint the nav already used. Below it the header is
+ * a different composition — two rows, destinations behind the menu — so it is
+ * a different tree, not the desktop tree with pieces hidden. */
+const COMPACT_QUERY = "(max-width: 54rem)";
 
 const VIEWS = [
   { id: "write", label: "Write" },
@@ -21,11 +27,45 @@ const VIEWS = [
  * theme. Transform / Clean are not sections — they live in the Write workspace
  * and in ⌘K. One liquid indicator glides behind the active view.
  */
-export default function NavBar({ theme, setTheme, activeView, onSwitchView, onOpenPalette }) {
+export default function NavBar({
+  theme,
+  setTheme,
+  activeView,
+  onSwitchView,
+  navDrag,
+  onOpenPalette,
+}) {
+  const compact = useMediaQuery(COMPACT_QUERY);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const itemsRef = useRef(null);
   const itemRefs = useRef({});
+
+  const index = VIEWS.findIndex((v) => v.id === activeView);
+
+  // Not a gesture of its own: the bar drives the stage's controller, so the
+  // cards move under the finger while the drag is happening and the release
+  // completes the same card-swipe a click would.
+  const swipe = navDrag;
+
+  // While dragging, the indicator leaves the active pill and tracks toward the
+  // neighbour by the gesture's own progress, so the bar is part of the movement
+  // instead of catching up after it.
+  const indicatorOverride = () => {
+    const dir = swipe.dragDir;
+    if (!dir) return null;
+    const from = itemRefs.current[VIEWS[index]?.id];
+    const to = itemRefs.current[VIEWS[index + dir]?.id];
+    if (!from || !to || !from.offsetWidth) return null;
+    const t = Math.min(1, Math.abs(swipe.progress.get()));
+    const lerp = (a, b) => a + (b - a) * t;
+    return {
+      x: lerp(from.offsetLeft, to.offsetLeft),
+      y: from.offsetTop,
+      width: lerp(from.offsetWidth, to.offsetWidth),
+      height: from.offsetHeight,
+    };
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -33,6 +73,10 @@ export default function NavBar({ theme, setTheme, activeView, onSwitchView, onOp
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!compact) setMenuOpen(false);
+  }, [compact]);
 
   useEffect(() => {
     if (!menuOpen) return undefined;
@@ -64,57 +108,89 @@ export default function NavBar({ theme, setTheme, activeView, onSwitchView, onOp
 
   return (
     <header className="nav" data-reveal-anchor>
-      <div className="nav__bar" data-scrolled={scrolled || undefined} data-open={menuOpen || undefined}>
+      <div
+        className="nav__bar"
+        data-scrolled={scrolled || undefined}
+        data-open={menuOpen || undefined}
+        data-dragging={swipe.dragging || undefined}
+        {...swipe.navHandlers}
+      >
         <span className="nav__edge" aria-hidden="true" />
 
-        <button type="button" className="nav__brand" onClick={() => go("write")}>
-          TextUtils
-        </button>
-
-        <nav className="nav__items" aria-label="Views" ref={itemsRef}>
-          <LiquidIndicator
-            containerRef={itemsRef}
-            getTarget={() => itemRefs.current[activeView] ?? null}
-            dependency={activeView}
-            className="nav__indicator"
-          />
-          {VIEWS.map((item) => (
-            <GlassPill
-              key={item.id}
-              ref={(el) => {
-                itemRefs.current[item.id] = el;
-              }}
-              magnetic={6}
-              active={activeView === item.id}
-              aria-current={activeView === item.id ? "page" : undefined}
-              onClick={() => go(item.id)}
+        {/* Row one on a phone: wordmark and the menu. On desktop it is simply
+            the left end of the single row. */}
+        <div className="nav__lead">
+          <button type="button" className="nav__brand" onClick={() => go("write")}>
+            TextUtils
+          </button>
+          {compact && (
+            <button
+              type="button"
+              data-no-swipe
+              className="nav__burger"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((v) => !v)}
             >
-              {item.label}
-            </GlassPill>
-          ))}
-        </nav>
+              <MenuGlyph open={menuOpen} />
+            </button>
+          )}
+        </div>
 
+        {!compact && (
+          <nav className="nav__items" aria-label="Views" ref={itemsRef}>
+            <LiquidIndicator
+              containerRef={itemsRef}
+              getTarget={() => itemRefs.current[activeView] ?? null}
+              dependency={activeView}
+              live={swipe.dragging}
+              getOverride={indicatorOverride}
+              className="nav__indicator"
+            />
+            {VIEWS.map((item) => (
+              <GlassPill
+                key={item.id}
+                ref={(el) => {
+                  itemRefs.current[item.id] = el;
+                }}
+                magnetic={6}
+                active={activeView === item.id}
+                aria-current={activeView === item.id ? "page" : undefined}
+                onClick={() => go(item.id)}
+              >
+                {item.label}
+              </GlassPill>
+            ))}
+          </nav>
+        )}
+
+        {/* Row two on a phone: the search control, full content width. Every
+            member of this row opts out of the bar's drag — the search is a
+            target you press, the theme toggle owns its own drag-to-scrub
+            gesture. What stays draggable is the bar itself and the wordmark
+            row, which is where the gesture was always aimed. */}
         <div className="nav__actions">
-          <GlassPill className="nav__search" magnetic={4} onClick={onOpenPalette} aria-label="Search actions">
+          <GlassPill
+            className="nav__search"
+            data-no-swipe
+            magnetic={4}
+            onClick={onOpenPalette}
+            aria-label="Search actions"
+          >
             <SearchIcon />
             <span className="nav__searchtext">Search actions</span>
             <kbd>{MOD} K</kbd>
           </GlassPill>
-          <ThemeToggle theme={theme} setTheme={setTheme} />
-          <button
-            type="button"
-            className="nav__burger"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((v) => !v)}
-          >
-            <MenuGlyph open={menuOpen} />
-          </button>
+          {!compact && (
+            <span data-no-swipe>
+              <ThemeToggle theme={theme} setTheme={setTheme} />
+            </span>
+          )}
         </div>
       </div>
 
       <AnimatePresence>
-        {menuOpen && (
+        {menuOpen && compact && (
           <m.div
             className="nav__menu"
             initial={{ opacity: 0, scaleY: 0.7, y: -8 }}

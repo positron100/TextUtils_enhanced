@@ -42,7 +42,6 @@ export default function JsonTool({ editorText }) {
           }}
           mono
           placeholder='{"paste":"json here"}'
-          rows={8}
           onClear={io.clearInput}
         />
       }
@@ -65,7 +64,6 @@ export default function JsonTool({ editorText }) {
             value={io.output}
             readOnly
             mono
-            rows={8}
             onCopy={io.copyOutput}
             onClear={io.clearOutput}
           />

@@ -56,25 +56,13 @@
 /* failure tone — same animation, red mark / seal / heading */
 .validseal--error .validseal__stage,
 .validseal--error .validseal__done,
-.validseal--error .validseal__check {
-  color: #b4432f;
-}
+.validseal--error .validseal__check,
 .validseal--error .validseal__title {
-  color: #b4432f;
-}
-:root[data-theme="dark"] .validseal--error .validseal__stage,
-:root[data-theme="dark"] .validseal--error .validseal__done,
-:root[data-theme="dark"] .validseal--error .validseal__check,
-:root[data-theme="dark"] .validseal--error .validseal__title {
-  color: #f0a58f;
+  color: var(--danger);
 }
 .validseal--error .validseal__seal {
-  background: #b4432f;
-  color: #fff;
-}
-:root[data-theme="dark"] .validseal--error .validseal__seal {
-  background: #f0a58f;
-  color: #2a140f;
+  background: var(--danger);
+  color: var(--danger-contrast);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="TextUtils">
+  <!-- TextUtils mark: two written lines and the insertion caret, in paper on
+       ink. Same ink-blue accent and paper tone as the app's light theme
+       (tokens.css), and the same vertical rule motif the writing surfaces use.
+       One solid mark rather than a theme-reactive one: a mid-value ink field
+       with light marks reads on light and dark browser chrome alike. -->
+  <rect width="32" height="32" rx="7" fill="#37567c"/>
+  <g fill="#f4f1ec">
+    <rect x="6.4" y="9.6" width="13" height="2.9" rx="1.45"/>
+    <rect x="6.4" y="19.5" width="9.5" height="2.9" rx="1.45"/>
+    <rect x="20.2" y="8" width="3.1" height="16" rx="1.55"/>
+  </g>
+</svg>

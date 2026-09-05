@@ -9,7 +9,9 @@ import {
   ALGORITHMS,
 } from "./index.js";
 
-const SYMMETRIC = ALGORITHMS.filter((a) => a.kind === "symmetric");
+// The native TUC1 format only — the OpenSSL-compatible entries have their own
+// suite (openssl-compat.test.js), since they carry no envelope and no KDF.
+const SYMMETRIC = ALGORITHMS.filter((a) => a.kind === "symmetric" && a.format === "tuc1");
 const AUTHENTICATED = ["AES-256-GCM", "AES-256-GCM-SIV", "ChaCha20-Poly1305", "XChaCha20-Poly1305"];
 
 describe("every symmetric algorithm round-trips", () => {

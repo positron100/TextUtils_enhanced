@@ -228,10 +228,7 @@
   margin: 4px 0 0;
   overflow: hidden;
   font-size: 0.76rem;
-  color: #b4432f;
-}
-:root[data-theme="dark"] .writtenline__error {
-  color: #f0a58f;
+  color: var(--danger);
 }
 
 .contactcard__foot {
@@ -280,10 +277,7 @@
   margin: var(--space-3) 0 0 var(--space-3);
   min-height: 1.25rem;
   font-size: 0.82rem;
-  color: #b4432f;
-}
-:root[data-theme="dark"] .contactcard__error {
-  color: #f0a58f;
+  color: var(--danger);
 }
 .contactcard__error a {
   color: inherit;
